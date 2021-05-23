@@ -7,7 +7,19 @@
 
 namespace libtosa {
 
+    struct Range {
+        int start;
+        int end;
+        int step;
+
+        // 0,0 means everything
+        explicit Range(int _end=0) { end = _end; start=0; step=1; }
+        explicit Range(int _start, int _end, int _step=1) { end = _end; start=_start; step=_step; }
+    };
+
     typedef std::vector<int> Shape;
+    typedef std::vector<Range> TensorRange;
+
     typedef enum {
         UNKNOWN = 0,
         FLOAT = 1, FLOAT32 = FLOAT, F32 = FLOAT,
@@ -31,15 +43,12 @@ namespace libtosa {
         // floating-point number truncated to 16 bits.
         // This format has 1 sign bit, 8 exponent bits, and 7 mantissa bits.
         BFLOAT16 = 16, BF16 = BFLOAT16,
-        __LAST = BFLOAT16
+        LAST = BFLOAT16
     } DType;
 
-    int dtype_byte_size(DType dtype)
-    {
-        //                            0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
-        static int DTypeByteSize[] = {0, 4, 1, 1, 2, 2, 4, 8, 1, 1, 2, 8, 4, 8, 8,16, 2};
-        return ((dtype < 0) || (dtype > DType::__LAST)) ? -1 : DTypeByteSize[dtype];
-    }
+    int dtype_byte_size(DType dtype);
+
+
 }
 
 #endif //LIBTOSA_TOSA_TYPES_H
