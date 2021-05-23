@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.19)
-project(libcpptosa)
+project(libtosa)
 
 set(CMAKE_CXX_STANDARD 14)
+file(GLOB SRC_FILES src/*.c src/*.cpp)
+file(GLOB INC_FILES include/*.h include/*.hpp)
 
-add_library(cpptosa SHARED src/libmain.cpp)
+include_directories(include)
+
+add_library(tosa SHARED ${SRC_FILES} ${INC_FILES})
