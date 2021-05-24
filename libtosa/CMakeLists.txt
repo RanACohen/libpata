@@ -7,4 +7,4 @@ file(GLOB INC_FILES include/*.h include/*.hpp)
 
 include_directories(include)
 
-add_library(tosa SHARED ${SRC_FILES} ${INC_FILES})
+add_library(tosa SHARED ${SRC_FILES} ${INC_FILES} include/tosa_errors.h)

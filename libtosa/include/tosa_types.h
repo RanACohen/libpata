@@ -1,23 +1,25 @@
 //
 // Created by rancohen on 23/5/2021.
 //
+#pragma once
 
 #ifndef LIBTOSA_TOSA_TYPES_H
 #define LIBTOSA_TOSA_TYPES_H
 
 namespace libtosa {
+    typedef long RelativeSize;
 
     struct Range {
-        int start;
-        int end;
-        int step;
+        RelativeSize start;
+        RelativeSize end;
+        size_t step;
 
         // 0,0 means everything
-        explicit Range(int _end=0) { end = _end; start=0; step=1; }
-        explicit Range(int _start, int _end, int _step=1) { end = _end; start=_start; step=_step; }
+        explicit Range(RelativeSize _end=0) { end = _end; start=0; step=1; }
+        explicit Range(RelativeSize _start, RelativeSize _end, unsigned _step=1) { end = _end; start=_start; step=_step; }
     };
 
-    typedef std::vector<int> Shape;
+    typedef std::vector<RelativeSize> Shape;
     typedef std::vector<Range> TensorRange;
 
     typedef enum {
