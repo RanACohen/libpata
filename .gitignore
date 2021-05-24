@@ -36,3 +36,4 @@
 
 # Cmake
 /cmake-build-*
+/bin/
