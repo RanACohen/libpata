@@ -7,13 +7,18 @@
 #include <memory>
 
 namespace libtosa {
+    enum MemoryBank {
+        CPU = 0, // CPU shared place
+        DEVICE =1  // Device non-shared (copyable via DMA to CPU shared)
+    };
+
     class MemoryBlock;
     typedef std::shared_ptr<MemoryBlock> MemoryBlockPtr;
 
     class Workspace {
         friend class MemoryBlock;
     public:
-        explicit Workspace(size_t size_in_bytes);
+        explicit Workspace(size_t size_in_bytes, MemoryBank bank=CPU);
 
 
     protected:

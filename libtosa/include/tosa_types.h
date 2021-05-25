@@ -19,7 +19,7 @@ namespace libtosa {
         explicit Range(RelativeSize _start, RelativeSize _end, unsigned _step=1) { end = _end; start=_start; step=_step; }
     };
 
-    typedef std::vector<RelativeSize> Shape;
+    typedef std::vector<size_t> Shape;
     typedef std::vector<Range> TensorRange;
 
     typedef enum {

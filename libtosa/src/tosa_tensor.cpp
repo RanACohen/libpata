@@ -10,12 +10,13 @@ int libtosa::dtype_byte_size(DType dtype)
     return ((dtype < 0) || (dtype > DType::LAST)) ? -1 : DTypeByteSize[dtype];
 }
 
+typedef std::shared_ptr<TensorImpl> TensorPtr;
 
 
-Tensor::Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace) {
+TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace) {
     _dtype = dtype;
     _shape = shape;
-    RelativeSize s=1;
+    size_t s=1;
     _stride.push_back(1);
     for (unsigned i=shape.size()-1; i>0; --i)
     {
@@ -34,7 +35,7 @@ Tensor::Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace) {
  * @param dtype
  * @param workspace
  */
-Tensor::Tensor(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace) {
+TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace) {
     _dtype = dtype;
     _shape = shape;
     _stride = stride;
@@ -43,7 +44,9 @@ Tensor::Tensor(const Shape &shape, const Shape &stride, DType dtype, const Works
     _memory = MemoryBlock::allocate(s, workspace);
 }
 
-Tensor::Tensor(const TensorPtr &base, const TensorRange &t_range) {
+#define CLIP(v,s,e) v = v < (s) ? (s) : v > (e) ? (e) : v
+
+TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
     _dtype = base->_dtype;
     _view_base = base;
     auto base_shape = base->shape();
@@ -55,14 +58,21 @@ Tensor::Tensor(const TensorPtr &base, const TensorRange &t_range) {
         // handle negative like in python: if end ==0 means the end as -1 is one before (unlike start).
         auto end = range.end > 0 ? range.end : base_shape[i]+range.end;
         auto start = range.start >= 0 ? range.start : base_shape[i]+range.start;
-        _shape.push_back((end-start)/range.step);
+        // make sure no out of bound
+        CLIP(end, 0, base_shape[i]);
+        CLIP(start, 0, base_shape[i]);
+        _shape.push_back((end-start+range.step-1)/range.step); // ceil: step 7 in 22 :4=ciel(22/7) 0,7,14,21
+        if (range.step != 1)
+        {
+            _stride[i] *= range.step;
+        }
         start_pos.push_back(start);
     }
     _base_offset = base->get_pos_offset(start_pos);
 }
 
 
-size_t Tensor::get_pos_offset(const Shape &pos) {
+size_t TensorImpl::get_pos_offset(const Shape &pos) {
     size_t ret = _base_offset;
     auto r = rank();
     if (pos.size() != r)

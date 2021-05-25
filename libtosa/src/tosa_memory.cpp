@@ -5,7 +5,7 @@
 
 using namespace libtosa;
 
-Workspace::Workspace(size_t size_in_bytes) {
+Workspace::Workspace(size_t size_in_bytes, MemoryBank bank) {
 
 }
 
