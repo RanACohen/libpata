@@ -5,6 +5,7 @@
 #ifndef LIBTOSA_TOSA_MEMORY_H
 #define LIBTOSA_TOSA_MEMORY_H
 #include <memory>
+#include <mutex>
 
 namespace libtosa {
     enum MemoryBank {
@@ -17,6 +18,9 @@ namespace libtosa {
 
     class Workspace {
         friend class MemoryBlock;
+        std::mutex _heap_mutex;
+        MemoryBank _bankType;
+        size_t _left_space; // todo: do a normal heap with page rounding to avoid fragmentation and force alignment
     public:
         explicit Workspace(size_t size_in_bytes, MemoryBank bank=CPU);
 
@@ -35,6 +39,8 @@ namespace libtosa {
         MemoryBlock(size_t size, const WorkspacePtr &workspace);
 
     public:
+        const WorkspacePtr &workspace() const { return _workspace; }
+
         static MemoryBlockPtr allocate(size_t size, const WorkspacePtr &workspace)
         {
             // todo: this is not neat, std::make_shared cannot be used due to private access.

@@ -32,6 +32,8 @@ std::runtime_error TosaThrow(const TosaRuntimeException &ex)
     return std::runtime_error(ex.msg());
 }
 
+#define TOSA_ASSERT(cond) {if (!(cond)) throw TosaThrow(TosaRuntimeException() << #cond);}
+
 }
 
 

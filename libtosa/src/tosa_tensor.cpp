@@ -51,6 +51,7 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
     _view_base = base;
     auto base_shape = base->shape();
     _stride = base->stride();
+    _memory = base->_memory;
     Shape start_pos;
     for(unsigned i=0; i<base->rank(); i++)
     {
@@ -84,4 +85,14 @@ size_t TensorImpl::get_pos_offset(const Shape &pos) {
         ret += pos[i]*_stride[i];
     }
     return ret;
+}
+
+Tensor Tensor::operator+(const Tensor &rhs) const {
+    TOSA_ASSERT(shape() == rhs.shape()); // todo : support broadcasting later
+    TOSA_ASSERT(dtype() == rhs.dtype()); // no implicit casting
+    // allocate output of add in the same workspace as the left hand side
+    auto out_tensor = Tensor(shape(), dtype(), workspace());
+    // todo: Gal - impl me
+
+    return out_tensor;
 }

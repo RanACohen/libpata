@@ -6,16 +6,23 @@
 using namespace libtosa;
 
 Workspace::Workspace(size_t size_in_bytes, MemoryBank bank) {
-
+    _left_space = size_in_bytes;
+    _bankType = bank;
 }
 
 void *Workspace::allocate(size_t size_in_bytes) {
-    // todo: implement me
-    return nullptr;
+    // todo: implement me using a normal heap
+    std::lock_guard<std::mutex> guard(_heap_mutex);
+    if (_left_space<size_in_bytes)
+        return nullptr;
+    _left_space -= size_in_bytes;
+    return malloc(size_in_bytes);
 }
 
 void Workspace::free(void *ptr, size_t size) {
-    // todo: implement me
+    std::lock_guard<std::mutex> guard(_heap_mutex);
+    _left_space += size;
+    ::free(ptr);
 }
 
 /**
