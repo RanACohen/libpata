@@ -15,6 +15,7 @@ namespace libtosa {
         size_t step;
 
         // 0,0 means everything
+        //Range(int p) { end = p+1; start=p; step=1;} this was an attempt to treat a single int as range of 1
         explicit Range(RelativeSize _end=0) { end = _end; start=0; step=1; }
         explicit Range(RelativeSize _start, RelativeSize _end, unsigned _step=1) { end = _end; start=_start; step=_step; }
     };

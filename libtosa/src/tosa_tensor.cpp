@@ -16,6 +16,7 @@ typedef std::shared_ptr<TensorImpl> TensorPtr;
 TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace) {
     _dtype = dtype;
     _shape = shape;
+    _element_size= dtype_byte_size(dtype);
     size_t s=1;
     _stride.push_back(1);
     for (unsigned i=shape.size()-1; i>0; --i)
@@ -39,6 +40,7 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
     _dtype = dtype;
     _shape = shape;
     _stride = stride;
+    _element_size= dtype_byte_size(dtype);
 
     auto s = stride[0]*shape[0]*dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
@@ -52,6 +54,7 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
     auto base_shape = base->shape();
     _stride = base->stride();
     _memory = base->_memory;
+    _element_size= base->_element_size;
     Shape start_pos;
     for(unsigned i=0; i<base->rank(); i++)
     {

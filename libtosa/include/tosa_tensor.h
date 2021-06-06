@@ -32,8 +32,28 @@ namespace libtosa {
         inline const Shape &stride() const { return _stride; }
 
         size_t get_pos_offset(const Shape &pos); // in elements units
+        inline void *get_addr(size_t p0) {
+            return (char*)(_memory->ptr())+ (_base_offset+p0*_stride[0])*_element_size;
+        }
+        inline void *get_addr(size_t p0, size_t p1) {
+            return (char*)(_memory->ptr())+ (_base_offset+p0*_stride[0]+p1*_stride[1])*_element_size;
+        }
+        inline void *get_addr(size_t p0, size_t p1, size_t p2) {
+            return (char*)(_memory->ptr())+ _element_size*(_base_offset+
+                                                p0*_stride[0] +
+                                                p1*_stride[1] +
+                                                p2*_stride[2]);
+        }
+        inline void *get_addr(size_t p0, size_t p1, size_t p2, size_t p3) {
+            return (char*)(_memory->ptr())+ _element_size*(_base_offset+
+                p0*_stride[0] +
+                p1*_stride[1] +
+                p2*_stride[2] +
+                p3*_stride[3]);
+        }
 
     private:
+        size_t _element_size;
         DType _dtype;
         Shape _shape;
         Shape _stride;
@@ -63,6 +83,15 @@ namespace libtosa {
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _impl->_stride; }
         inline const WorkspacePtr &workspace() const { return _impl->_memory->workspace(); }
+
+        template<typename T>
+        T* at(size_t p0) const {return (T*)_impl->get_addr(p0);}
+        template<typename T>
+        T* at(size_t p0, size_t p1) const {return (T*)_impl->get_addr(p0, p1);}
+        template<typename T>
+        T* at(size_t p0, size_t p1, size_t p2) const {return (T*)_impl->get_addr(p0, p1, p2);}
+        template<typename T>
+        T* at(size_t p0, size_t p1, size_t p2, size_t p3) const {return (T*)_impl->get_addr(p0, p1, p2, p3);}
 
         Tensor operator+(const Tensor &rhs) const;
     };

@@ -40,6 +40,7 @@ namespace libtosa {
 
     public:
         const WorkspacePtr &workspace() const { return _workspace; }
+        void *ptr() const { return _ptr;}
 
         static MemoryBlockPtr allocate(size_t size, const WorkspacePtr &workspace)
         {
