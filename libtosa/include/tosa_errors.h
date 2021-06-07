@@ -27,7 +27,7 @@ namespace libtosa {
         }
     };
 
-std::runtime_error TosaThrow(const TosaRuntimeException &ex)
+static inline std::runtime_error TosaThrow(const TosaRuntimeException &ex)
 {
     return std::runtime_error(ex.msg());
 }

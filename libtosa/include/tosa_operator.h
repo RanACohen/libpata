@@ -28,18 +28,16 @@ namespace libtosa {
     typedef std::vector<Tensor> TensorsList;
     typedef std::vector<Attr> AttrList; 
 
-    void schedule(std::string op_name, TensorsList inputs, TensorsList outputs, AttrList attributes) {
-        static ThreadPool pool (POOL_SIZE);
-        std::vector< std::future<int> > results;
-        results.emplace_back(
-            pool.enqueue([op_name] {
-                std::cout << "running " << op_name << std::endl;
-                // todo: should be actually performing the operation, by taking the inputs + attributes,
-                //       compute and write output - and update it's "ready" bool member. 
-                return 0;
-            })
-        );
-    }
+    void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
+    
+    class KernelFunction
+    {
+    public:
+        KernelFunction(const std::string &code);
+    };
+
+    
+    void parallel_for(const Range &index, const KernelFunction &func);
     
     //===----------------------------------------------------------------------===//
     //
@@ -48,24 +46,8 @@ namespace libtosa {
     // Each will create tensors and submit for scheduling into execution streams.
     //
     //===----------------------------------------------------------------------===//
-    Tensor reluN(const Tensor& in){
-        Tensor out(in.shape(), in.dtype(), in.workspace());
-
-        AttrList attributes; 
-        attributes.push_back(Attr(INT64, "max_int"));
-        attributes.push_back(Attr(FLOAT, "max_fp"));
-
-        schedule("tosa.reluN", {in}, {out}, attributes);
-        return out;
-    }
-
-    Tensor abs(const Tensor& in){
-        AttrList attributes; 
-        Tensor out(in.shape(), in.dtype(), in.workspace());
-
-        schedule("tosa.abs", {in}, {out}, attributes);
-        return out;
-    }
+    Tensor reluN(const Tensor& in);
+    Tensor abs(const Tensor& in);
 };
 
 #endif //LIBTOSA_TOSA_OPERATOR_H
