@@ -37,3 +37,5 @@
 # Cmake
 /cmake-build-*
 /bin/
+CMakeFiles*
+CMakeCache*

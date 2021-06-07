@@ -51,6 +51,7 @@ namespace libtosa {
                 p2*_stride[2] +
                 p3*_stride[3]);
         }
+        void update_state(bool state) { _is_ready = state; }
 
     private:
         size_t _element_size;
@@ -62,6 +63,7 @@ namespace libtosa {
 
         size_t _base_offset=0;
         MemoryBlockPtr  _memory;
+        bool _is_ready; // whether this tensors data is available for use
     };
 
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack

@@ -1,5 +1,6 @@
 #include "tosa_tensor.h"
 #include "tosa_errors.h"
+#include "tosa_operator.h"
 
 using namespace libtosa;
 
@@ -26,10 +27,11 @@ TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &work
     }
     s *= shape[0]*dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
+    _is_ready = true;
 }
 
 /**
- * Allocate with custom streides - this is the developer responsibility, should not be used really.
+ * Allocate with custom strides - this is the developer responsibility, should not be used really.
  * use Allocator with Range for custom strides
  * @param shape
  * @param stride
@@ -44,6 +46,7 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
 
     auto s = stride[0]*shape[0]*dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
+    _is_ready = true;
 }
 
 #define CLIP(v,s,e) v = v < (s) ? (s) : v > (e) ? (e) : v
@@ -73,6 +76,7 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
         start_pos.push_back(start);
     }
     _base_offset = base->get_pos_offset(start_pos);
+    _is_ready = true;
 }
 
 
@@ -90,12 +94,15 @@ size_t TensorImpl::get_pos_offset(const Shape &pos) {
     return ret;
 }
 
+// elementwise add
 Tensor Tensor::operator+(const Tensor &rhs) const {
     TOSA_ASSERT(shape() == rhs.shape()); // todo : support broadcasting later
     TOSA_ASSERT(dtype() == rhs.dtype()); // no implicit casting
-    // allocate output of add in the same workspace as the left hand side
-    auto out_tensor = Tensor(shape(), dtype(), workspace());
-    // todo: Gal - impl me
 
+    AttrList attributes; 
+    auto out_tensor = Tensor(shape(), dtype(), workspace());
+
+    // todo: Can I send my own object? Or maybe copy? does it make sense? 
+    schedule("tosa.add", {*this, rhs}, {out_tensor}, attributes);
     return out_tensor;
 }
