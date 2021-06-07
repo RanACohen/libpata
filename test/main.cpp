@@ -2,6 +2,7 @@
 #include <gtest/gtest.h>
 
 #include "tosa_tensor.h"
+#include "tosa_operator.h"
 
 using namespace libtosa;
 // Demonstrate some basic assertions.
@@ -43,12 +44,6 @@ TEST(TensorTests, TestAdd1) {
 
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;
-
-    EXPECT_EQ(s1.stride(), Shape({600,30,2}));
-    EXPECT_EQ(s1.shape(), Shape({5,15,5}));
-
-    EXPECT_EQ(s2.stride(), Shape({1200,30,1}));
-    EXPECT_EQ(s2.shape(), Shape({3,20,30}));
 }
 
 TEST(TensorTests, TestReluN) {

@@ -2,19 +2,16 @@
 // Created by galstar on 31/5/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_STREAM_H
-#define LIBTOSA_TOSA_STREAM_H
+#ifndef LIBTOSA_TOSA_OPERATOR_H
+#define LIBTOSA_TOSA_OPERATOR_H
 #include <memory>
 #include <queue>
 #include <vector>
 #include <string>
-#include <>
 
 #include "tosa_tensor.h"
 
 namespace libtosa {
-    typedef std::vector<Tensor> TensorsList;
-    typedef std::vector<Attr> AttrList; 
 
     class Attr {
         public:
@@ -22,7 +19,9 @@ namespace libtosa {
         private: 
             DType _dtype;
             std::string _name;
-    };
+    };    
+    typedef std::vector<Tensor> TensorsList;
+    typedef std::vector<Attr> AttrList; 
 
     void schedule(std::string op_name, TensorsList inputs, TensorsList outputs, AttrList attributes) {
         // todo: Gal implement me. 
@@ -58,3 +57,5 @@ namespace libtosa {
         return out;
     }
 };
+
+#endif //LIBTOSA_TOSA_OPERATOR_H

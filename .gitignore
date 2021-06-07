@@ -39,3 +39,11 @@
 /bin/
 CMakeFiles*
 CMakeCache*
+test/*cmake*
+Makefile
+test/Makefile
+libtosa/*cmake
+build/
+.vscode/
+*cmake
+_deps/
