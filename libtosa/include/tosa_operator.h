@@ -8,11 +8,16 @@
 #include <queue>
 #include <vector>
 #include <string>
+#include <iostream>
 
 #include "tosa_tensor.h"
+#include "ThreadPool.h"
 
-namespace libtosa {
+const int POOL_SIZE = 4;
 
+using namespace std;
+
+namespace libtosa {    
     class Attr {
         public:
             explicit Attr(DType dtype, std::string name) : _dtype(dtype), _name(name) {}
@@ -24,10 +29,16 @@ namespace libtosa {
     typedef std::vector<Attr> AttrList; 
 
     void schedule(std::string op_name, TensorsList inputs, TensorsList outputs, AttrList attributes) {
-        // todo: Gal implement me. 
-        //
-        // This schedules the work into streams, assign it to new/existing stream 
-        // and signal/wait. 
+        static ThreadPool pool (POOL_SIZE);
+        std::vector< std::future<int> > results;
+        results.emplace_back(
+            pool.enqueue([op_name] {
+                std::cout << "running " << op_name << std::endl;
+                // todo: should be actually performing the operation, by taking the inputs + attributes,
+                //       compute and write output - and update it's "ready" bool member. 
+                return 0;
+            })
+        );
     }
     
     //===----------------------------------------------------------------------===//
@@ -37,7 +48,6 @@ namespace libtosa {
     // Each will create tensors and submit for scheduling into execution streams.
     //
     //===----------------------------------------------------------------------===//
-   
     Tensor reluN(const Tensor& in){
         Tensor out(in.shape(), in.dtype(), in.workspace());
 
