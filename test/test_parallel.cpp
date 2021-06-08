@@ -6,9 +6,20 @@
 
 using namespace libtosa;
 // Demonstrate some basic assertions.
-TEST(ParallelTests, StrideTest) {
+TEST(ParallelTests, BasicTest) {
     auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({10, 20, 30}, FLOAT, ws);
-    Shape ex_stride = {600,30,1};
-    EXPECT_EQ(t.stride(), ex_stride);
+    Tensor a({10, 20, 30}, FLOAT, ws);
+    Tensor b = Tensor::like(a);
+    Tensor c = Tensor::like(a);
+
+    parallel_for(Range(10), 
+// {a,b,c}, input tensors
+// 1. need to define the relation between the code and the input tensors
+// 2. need to define the relation betwwen the code and the given index space
+// 3. need to define index space mapping to tensor space
+"\
+    \
+    c[i]=a[i]+b[i];\
+    ");
+
 }

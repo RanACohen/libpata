@@ -34,6 +34,7 @@ namespace libtosa {
     {
     public:
         KernelFunction(const std::string &code);
+        KernelFunction(const char *code);
     };
 
     

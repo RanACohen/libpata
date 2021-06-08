@@ -78,6 +78,10 @@ namespace libtosa {
         explicit Tensor(const Tensor &base, const TensorRange &t_range):
                 _impl(std::make_shared<TensorImpl>(base._impl, t_range)) {}
 
+        static inline Tensor like(const Tensor&t) { 
+            return Tensor(t.shape(), t.dtype(), t.workspace());
+        }
+
         // access impl private members to avoid nested function calls
         inline const Shape &shape() const { return _impl->_shape; }
         inline DType dtype() const { return _impl->_dtype; }

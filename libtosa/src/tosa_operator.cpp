@@ -22,6 +22,17 @@ KernelFunction::KernelFunction(const std::string &code)
 {
 }
 
+KernelFunction::KernelFunction(const char *code)
+{
+
+}
+
+void libtosa::parallel_for(const Range &index, const KernelFunction &func)
+{
+
+}
+
+
 Tensor libtosa::reluN(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
