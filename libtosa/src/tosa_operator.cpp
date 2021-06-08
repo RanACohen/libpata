@@ -1,6 +1,7 @@
 #include "tosa_tensor.h"
 #include "tosa_errors.h"
 #include "tosa_operator.h"
+#include "ThreadPool.h"
 
 using namespace libtosa;
 

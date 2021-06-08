@@ -3,6 +3,7 @@
 
 #include "tosa_tensor.h"
 #include "tosa_operator.h"
+#include "tosa_stream.h"
 
 using namespace libtosa;
 // Demonstrate some basic assertions.
@@ -22,4 +23,13 @@ TEST(ParallelTests, BasicTest) {
     c[i]=a[i]+b[i];\
     ");
 
+}
+
+TEST(ParallelTests, StreamTest1) {
+    auto str = StreamManager::Inst().createStream();
+    auto str2 = StreamManager::Inst().createStream();
+    ASSERT_EQ(str2->id(), 3);
+    str.reset();
+    str2 = StreamManager::Inst().createStream();
+    ASSERT_EQ(str2->id(), 4);
 }

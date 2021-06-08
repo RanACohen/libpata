@@ -11,7 +11,6 @@
 #include <iostream>
 
 #include "tosa_tensor.h"
-#include "ThreadPool.h"
 
 const int POOL_SIZE = 4;
 
