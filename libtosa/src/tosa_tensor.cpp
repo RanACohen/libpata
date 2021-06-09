@@ -27,7 +27,6 @@ TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &work
     }
     s *= shape[0]*dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
-    _is_ready = true;
 }
 
 /**
@@ -46,7 +45,6 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
 
     auto s = stride[0]*shape[0]*dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
-    _is_ready = true;
 }
 
 #define CLIP(v,s,e) v = v < (s) ? (s) : v > (e) ? (e) : v
@@ -75,10 +73,8 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
         }
         start_pos.push_back(start);
     }
-    _base_offset = base->get_pos_offset(start_pos);
-    _is_ready = true;
+    _base_offset = base->get_pos_offset(start_pos);    
 }
-
 
 size_t TensorImpl::get_pos_offset(const Shape &pos) {
     size_t ret = _base_offset;

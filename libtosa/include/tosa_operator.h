@@ -24,8 +24,31 @@ namespace libtosa {
             DType _dtype;
             std::string _name;
     };    
+
     typedef std::vector<Tensor> TensorsList;
     typedef std::vector<Attr> AttrList; 
+
+    class Operator{
+        public:
+            explicit Operator(const std::string& name, 
+                    const TensorsList& in,
+                    const TensorsList& out, 
+                    const AttrList& attr):
+                _name(name),
+                _inputs (in), 
+                _outputs(out),
+                _attributes(attr) {}
+
+            explicit Operator(const std::shared_ptr<Operator> &op);
+
+            inline std::string name() { return _name; }
+            TensorsList outputs() { return _outputs;}
+        private:
+            std::string _name;
+            TensorsList _inputs;
+            TensorsList _outputs;
+            AttrList _attributes;
+    };
 
     void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
     

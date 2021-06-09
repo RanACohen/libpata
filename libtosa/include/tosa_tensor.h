@@ -51,8 +51,6 @@ namespace libtosa {
                 p2*_stride[2] +
                 p3*_stride[3]);
         }
-        void update_state(bool state) { _is_ready = state; }
-
     private:
         size_t _element_size;
         DType _dtype;
@@ -60,15 +58,14 @@ namespace libtosa {
         Shape _stride;
         // shall we add weakptr list for the reverse order?
         std::shared_ptr<TensorImpl> _view_base;
-
         size_t _base_offset=0;
         MemoryBlockPtr  _memory;
-        bool _is_ready; // whether this tensors data is available for use
     };
 
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
+        std::shared_ptr<Operator> _signal;
         std::shared_ptr<TensorImpl> _impl;
     public:
         explicit Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace):
@@ -98,6 +95,9 @@ namespace libtosa {
         T* at(size_t p0, size_t p1, size_t p2) const {return (T*)_impl->get_addr(p0, p1, p2);}
         template<typename T>
         T* at(size_t p0, size_t p1, size_t p2, size_t p3) const {return (T*)_impl->get_addr(p0, p1, p2, p3);}
+
+        inline void set_signal(std::shared_ptr<Operator> &signal) { _signal = signal;}
+        inline const bool is_ready() { return _signal == nullptr;}
 
         Tensor operator+(const Tensor &rhs) const;
     };

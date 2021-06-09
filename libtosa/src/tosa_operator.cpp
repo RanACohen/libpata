@@ -1,13 +1,23 @@
 #include "tosa_tensor.h"
 #include "tosa_errors.h"
 #include "tosa_operator.h"
-#include "ThreadPool.h"
+#include "tosa_stream.h"
+//#include "ThreadPool.h"
 
 using namespace libtosa;
 
+
+Operator::Operator(const std::shared_ptr<Operator> &op)
+{
+    _name = op->_name;
+    _outputs = op->_outputs;
+    _inputs = op->_inputs;
+    _attributes = op->_attributes;
+}
+
 void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
 {
-    static ThreadPool pool(POOL_SIZE);
+    /*static ThreadPool pool(POOL_SIZE);
     std::vector<std::future<int>> results;
     results.emplace_back(
         pool.enqueue([op_name]
@@ -17,6 +27,9 @@ void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, co
                          //       compute and write output - and update it's "ready" bool member.
                          return 0;
                      }));
+    */
+   StreamManager manager = StreamManager::Inst();
+
 }
 
 KernelFunction::KernelFunction(const std::string &code)
