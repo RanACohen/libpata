@@ -14,6 +14,12 @@
 #include "tosa_operator.h"
 
 namespace libtosa {
+    static inline size_t __adder(size_t v) { return v; }
+    template<typename T, typename... Args>
+    static inline size_t __adder(T base, Args... args) {        
+        return base + __adder(args...);
+    }
+
     class Tensor;
     class Signal;
     /**
@@ -34,25 +40,13 @@ namespace libtosa {
         inline const Shape &stride() const { return _stride; }
 
         size_t get_pos_offset(const Shape &pos); // in elements units
-        inline void *get_addr(size_t p0) {
-            return (char*)(_memory->ptr())+ (_base_offset+p0*_stride[0])*_element_size;
+        template<typename... Args>
+        inline void *get(Args... p) {
+            int i=sizeof...(p)-1;            
+            size_t offset=__adder( _stride[i--]*p...); // pack goes in reverse...
+            return (char*)(_memory->ptr())+ _element_size*(_base_offset+offset);
         }
-        inline void *get_addr(size_t p0, size_t p1) {
-            return (char*)(_memory->ptr())+ (_base_offset+p0*_stride[0]+p1*_stride[1])*_element_size;
-        }
-        inline void *get_addr(size_t p0, size_t p1, size_t p2) {
-            return (char*)(_memory->ptr())+ _element_size*(_base_offset+
-                                                p0*_stride[0] +
-                                                p1*_stride[1] +
-                                                p2*_stride[2]);
-        }
-        inline void *get_addr(size_t p0, size_t p1, size_t p2, size_t p3) {
-            return (char*)(_memory->ptr())+ _element_size*(_base_offset+
-                p0*_stride[0] +
-                p1*_stride[1] +
-                p2*_stride[2] +
-                p3*_stride[3]);
-        }
+
     private:
         size_t _element_size;
         DType _dtype;
@@ -89,15 +83,16 @@ namespace libtosa {
         inline const Shape &stride() const { return _impl->_stride; }
         inline const WorkspacePtr &workspace() const { return _impl->_memory->workspace(); }
 
-        template<typename T>
-        T* at(size_t p0) const {return (T*)_impl->get_addr(p0);}
+        template<typename T, typename... size_t>
+        T* at(size_t... p0) const {return (T*)_impl->get(p0...);}
+/*
         template<typename T>
         T* at(size_t p0, size_t p1) const {return (T*)_impl->get_addr(p0, p1);}
         template<typename T>
         T* at(size_t p0, size_t p1, size_t p2) const {return (T*)_impl->get_addr(p0, p1, p2);}
         template<typename T>
         T* at(size_t p0, size_t p1, size_t p2, size_t p3) const {return (T*)_impl->get_addr(p0, p1, p2, p3);}
-
+*/
         inline void set_signal(std::shared_ptr<Signal> &signal) { _signal = signal;}
         inline std::shared_ptr<Signal>& signal() { return _signal; }
         inline const bool is_ready() { return _signal == nullptr;} // todo: think maybe it should lock and create a new wait

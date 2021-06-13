@@ -16,6 +16,7 @@ TEST(TensorTests, StrideTest) {
 TEST(TensorTests, TestView1) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
+
     for (int i=0; i<10 ; i++)
         for (int j=0; j<20 ; j++)
             for (int k=0; k<20 ; k++)
@@ -26,7 +27,9 @@ TEST(TensorTests, TestView1) {
     Tensor s2(t, {Range(5, 15, 2)});
     EXPECT_EQ(s1.stride(), Shape({600,30,2}));
     EXPECT_EQ(s1.shape(), Shape({5,15,5}));
-    EXPECT_EQ(50512. , *s1.at<float>(0,5,1));
+    float *pf = s1.at<float>(0,5,1);
+    EXPECT_EQ(50512. , *pf);
+    
     EXPECT_EQ(50514. , *s1.at<float>(0,5,2));
 
     EXPECT_EQ(s2.stride(), Shape({1200,30,1}));
