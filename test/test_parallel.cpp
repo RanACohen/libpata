@@ -41,3 +41,7 @@ TEST(ParallelTests, PushStreamsTest) {
     auto str = StreamManager::Inst().createStream();
     ASSERT_EQ(str->id(), 4); 
 }
+
+// todo: add signal testing + view signal
+
+// todo: add view overlap testing

@@ -51,7 +51,7 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
 
 TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
     _dtype = base->_dtype;
-    _view_base = base;
+    _view_base = base;    
     auto base_shape = base->shape();
     _stride = base->stride();
     _memory = base->_memory;
@@ -74,6 +74,9 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range) {
         start_pos.push_back(start);
     }
     _base_offset = base->get_pos_offset(start_pos);    
+
+    //todo: add _vie wneighbors setting by overllapping
+    
 }
 
 size_t TensorImpl::get_pos_offset(const Shape &pos) {
