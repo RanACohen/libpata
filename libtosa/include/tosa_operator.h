@@ -12,8 +12,6 @@
 
 #include "tosa_tensor.h"
 
-const int POOL_SIZE = 4;
-
 using namespace std;
 
 namespace libtosa {    
@@ -23,31 +21,44 @@ namespace libtosa {
         private: 
             DType _dtype;
             std::string _name;
-    };    
+    };
+    class Tensor;
 
     typedef std::vector<Tensor> TensorsList;
     typedef std::vector<Attr> AttrList; 
 
     class Operator{
         public:
-            explicit Operator(const std::string& name, 
-                    const TensorsList& in,
-                    const TensorsList& out, 
-                    const AttrList& attr):
+            Operator(const std::string &name) : 
+                _name(name) {}
+            Operator(const std::string &name, 
+                    const TensorsList &in,
+                    const TensorsList &out, 
+                    const AttrList &attr):
                 _name(name),
                 _inputs (in), 
                 _outputs(out),
                 _attributes(attr) {}
 
-            explicit Operator(const std::shared_ptr<Operator> &op);
-
+            Operator(const std::shared_ptr<Operator> &op);
+            Operator(const Operator &base);
+            
             inline std::string name() { return _name; }
             TensorsList outputs() { return _outputs;}
-        private:
+        protected:
             std::string _name;
             TensorsList _inputs;
             TensorsList _outputs;
-            AttrList _attributes;
+            AttrList _attributes; 
+    };    
+    typedef std::weak_ptr<Operator> OperatorPtr;
+
+    class Signal : public Operator {
+        private:
+            std::vector<OperatorPtr> _wait_ops;
+        public:
+            Signal(const std::string& name): Operator(name){}
+            void push_back(OperatorPtr& op) { _wait_ops.push_back(op); }
     };
 
     void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);

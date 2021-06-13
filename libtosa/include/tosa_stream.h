@@ -12,7 +12,6 @@
 
 namespace libtosa {  
     class StreamPool;
-    typedef std::shared_ptr<Operator> OperatorPtr;
 
     class Stream {
         friend class StreamPool;
@@ -23,8 +22,8 @@ namespace libtosa {
 
     public:
         int id() { return _id;}
-        void push(OperatorPtr& op); // todo: how do I push a "wait" to a new stream?
-        void add_single_op (OperatorPtr& op) { _op_queue.push(op);}
+        void push(const std::shared_ptr<Operator> & op);
+        void add_single_op (const OperatorPtr& op) { _op_queue.push(op);}
         const OperatorPtr& pop();
     };
 
@@ -33,7 +32,6 @@ namespace libtosa {
     class StreamManager {
         public:
             static StreamManager &Inst();
-
             StreamPtr createStream(); 
 
     private:

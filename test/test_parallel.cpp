@@ -25,11 +25,19 @@ TEST(ParallelTests, BasicTest) {
 
 }
 
-TEST(ParallelTests, StreamTest1) {
+TEST(ParallelTests, CreateStreamsTest) {
     auto str = StreamManager::Inst().createStream();
     auto str2 = StreamManager::Inst().createStream();
     ASSERT_EQ(str2->id(), 3);
     str.reset();
     str2 = StreamManager::Inst().createStream();
     ASSERT_EQ(str2->id(), 4);
+}
+
+TEST(ParallelTests, PushStreamsTest) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor t({10, 20, 30}, FLOAT, ws);
+    auto x = abs(t);
+    auto str = StreamManager::Inst().createStream();
+    ASSERT_EQ(str->id(), 4); 
 }

@@ -4,32 +4,26 @@
 #include <iostream>
 #include <mutex>
 #include <vector>
-
-#include "ThreadPool.h"
 #include "tosa_stream.h"
+#include "tosa_tensor.h"
+#include "tosa_errors.h"
+#include "tosa_operator.h"
 
 using namespace libtosa;
 
 Stream::Stream(int id):_id(id)
 {
-   std::cout << "Stream " << id << " created." << std::endl;
+   //std::cout << "Stream " << id << " created." << std::endl;
 }
 
-void Stream::push(StreamManager manager, OperatorPtr& op)
+void Stream::push(const std::shared_ptr<Operator> &op)
 {
-    std::cout << "Stream [" << id() << "] - push op=" << op->name() << std::endl;
     add_single_op(op);
-    for (auto& t: op->outputs())
+    for (auto t: op->outputs())
     {
-        std::cout << "Stream [" << id() << "] - push op=signal" << std::endl;
-        Tensor middleman ({1}, FLOAT, t.workspace());
-        OperatorPtr& signal = new Operator("signal", {t}, {middleman}, {});
-        OperatorPtr& wait = new Operator("wait", {middleman}, {}, {});
+        std::shared_ptr<Signal> signal = std::make_shared<Signal>("signal");
         add_single_op(signal);
         t.set_signal(signal);
-
-        StreamPtr new_stream = manager.createStream();
-        new_stream->add_single_op(wait)
     }
 }
 
@@ -37,17 +31,6 @@ const OperatorPtr& Stream::pop()
 {
     // todo: implement me
 }
-
-T1 -> Task 1 -> T2 -> Task2 -> T3
-
-
-Signal 
-Task1       Wait    
-
-Make sure T2 has linked to Signal.
-
-signal -> t -> wait ->
-
 
 class libtosa::StreamPool
 {
@@ -89,10 +72,8 @@ class libtosa::StreamPool
             _pool.pop_back();
             return ret;
         }
-
-        bool is_empty() { return _pool.empty();} // todo: 
+        bool is_empty() { return _pool.empty();}
 };
-
 
 StreamManager &StreamManager::Inst()
 {
@@ -110,3 +91,4 @@ StreamPtr StreamManager::createStream()
 {
     return _pool->createStream();
 }
+

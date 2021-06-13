@@ -11,9 +11,11 @@
 
 #include "tosa_types.h"
 #include "tosa_memory.h"
+#include "tosa_operator.h"
 
 namespace libtosa {
     class Tensor;
+    class Signal;
     /**
      * TensorImpl is an Immutable object that describes a tensor or a sub view of another tensor
      * Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
@@ -65,7 +67,7 @@ namespace libtosa {
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
-        std::shared_ptr<Operator> _signal;
+        std::shared_ptr<Signal> _signal;
         std::shared_ptr<TensorImpl> _impl;
     public:
         explicit Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace):
@@ -96,8 +98,9 @@ namespace libtosa {
         template<typename T>
         T* at(size_t p0, size_t p1, size_t p2, size_t p3) const {return (T*)_impl->get_addr(p0, p1, p2, p3);}
 
-        inline void set_signal(std::shared_ptr<Operator> &signal) { _signal = signal;}
-        inline const bool is_ready() { return _signal == nullptr;}
+        inline void set_signal(std::shared_ptr<Signal> &signal) { _signal = signal;}
+        inline std::shared_ptr<Signal>& signal() { return _signal; }
+        inline const bool is_ready() { return _signal == nullptr;} // todo: think maybe it should lock and create a new wait
 
         Tensor operator+(const Tensor &rhs) const;
     };

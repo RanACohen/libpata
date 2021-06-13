@@ -14,22 +14,29 @@ Operator::Operator(const std::shared_ptr<Operator> &op)
     _inputs = op->_inputs;
     _attributes = op->_attributes;
 }
+Operator::Operator(const Operator &base)
+{
+    _name = base._name;
+    _outputs = base._outputs;
+    _inputs = base._inputs;
+    _attributes = base._attributes;
+}
 
 void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
 {
-    /*static ThreadPool pool(POOL_SIZE);
-    std::vector<std::future<int>> results;
-    results.emplace_back(
-        pool.enqueue([op_name]
-                     {
-                         std::cout << "running " << op_name << std::endl;
-                         // todo: should be actually performing the operation, by taking the inputs + attributes,
-                         //       compute and write output - and update it's "ready" bool member.
-                         return 0;
-                     }));
-    */
-   StreamManager manager = StreamManager::Inst();
-
+    auto manager = StreamManager::Inst();
+    for (auto in : inputs)
+    {
+        /* Since this command have input tensors that are not ready yet,
+           we need to add dependecy "wait" for the current command. */ 
+        if (!in.is_ready())
+        {
+            OperatorPtr wait = std::make_shared<Operator>("wait");
+            in.signal()->push_back(wait);
+            manager.createStream()->add_single_op(wait);
+        }
+    }
+    manager.createStream()->push(std::make_shared<Operator>(op_name, inputs, outputs, attributes));
 }
 
 KernelFunction::KernelFunction(const std::string &code)
