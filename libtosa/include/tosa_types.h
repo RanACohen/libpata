@@ -5,6 +5,7 @@
 
 #ifndef LIBTOSA_TOSA_TYPES_H
 #define LIBTOSA_TOSA_TYPES_H
+#include <vector>
 
 namespace libtosa {
     typedef long RelativeSize;

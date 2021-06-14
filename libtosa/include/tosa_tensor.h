@@ -6,7 +6,7 @@
 
 #ifndef LIBTOSA_TOSA_TENSOR_H
 #define LIBTOSA_TOSA_TENSOR_H
-#include <vector>
+#include <list>
 #include <memory>
 
 #include "tosa_types.h"
@@ -30,42 +30,39 @@ namespace libtosa {
     class TensorImpl: public std::enable_shared_from_this<TensorImpl> {
         friend class Tensor;
     public:
+        typedef std::list<std::weak_ptr<TensorImpl>> WaekTensorList;
+        typedef WaekTensorList::iterator WaekTensorItem;
+
         explicit TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace);
         explicit TensorImpl(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace);
         explicit TensorImpl(const std::shared_ptr<TensorImpl> &base, const TensorRange &t_range);
-
+        ~TensorImpl();
+        
         // Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
         inline const Shape &shape() const { return _shape; }
         inline unsigned rank() const { return _shape.size(); }
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _stride; }
+        inline const Shape &start_pos() const { return _start_pos; }
 
         
         std::shared_ptr<TensorImpl> subrange(const TensorRange &tr){        
             std::shared_ptr<TensorImpl> me = shared_from_this();
             auto ret = std::make_shared<TensorImpl>(me, tr);
-            _views.push_back(ret);
+            register_as_view(ret);
             return ret;
         }
 
-        size_t get_pos_offset(const Shape &pos); // in elements units
-        inline void set_signal(std::shared_ptr<Signal> &signal, bool from_view = false) { 
-            TOSA_ASSERT(!_signal); // if this tensor is not ready we cannot overide it
-            _signal = signal;
-            if (_view_base) // if I am a view so it my base not ready
-                _view_base->set_signal(signal);
-
-            // set the signal event on all the other tensors that are my view
-            //if the base is not ready, so are all the views
-            // only if not coming from a view
-            if (from_view) return;
-            for (const auto &v : _views)
-            {
-                auto v_shrd = v.lock();
-                if (!v_shrd) continue;
-                v_shrd->set_signal(signal); 
-            }
+        void register_as_view(const std::shared_ptr<TensorImpl> &view);
+        void add_me_to(WaekTensorList &list)
+        {
+            _my_refernces.emplace_back(list, list.insert(list.begin(), shared_from_this()));
         }
+
+        bool is_view_overlap(const std::shared_ptr<TensorImpl> &sibling_view);
+
+        size_t get_pos_offset(const Shape &pos); // in elements units
+        void set_signal(std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
 
         template<typename... Args>
         inline void *get(Args... p) {
@@ -79,9 +76,19 @@ namespace libtosa {
         DType _dtype;
         Shape _shape;
         Shape _stride;
+        Shape _start_pos;
+        struct WeakListReference {
+            WaekTensorList &_list;
+            WaekTensorItem _item;
+
+            WeakListReference(WaekTensorList &list, const WaekTensorItem &item):_list(list), _item(item){}
+            ~WeakListReference() { _list.erase(_item); }
+        };
         
         std::shared_ptr<TensorImpl> _view_base;
-        std::vector<std::weak_ptr<TensorImpl>> _views;
+        WaekTensorList _overlap_tensors;
+        WaekTensorList _views;        
+        std::list<WeakListReference> _my_refernces;
         std::shared_ptr<Signal> _signal;
 
         size_t _base_offset=0;
