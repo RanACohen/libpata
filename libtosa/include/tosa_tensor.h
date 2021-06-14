@@ -27,7 +27,7 @@ namespace libtosa {
      * TensorImpl is an Immutable object that describes a tensor or a sub view of another tensor
      * Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
      */
-    class TensorImpl {
+    class TensorImpl: public std::enable_shared_from_this<TensorImpl> {
         friend class Tensor;
     public:
         explicit TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace);
@@ -39,6 +39,14 @@ namespace libtosa {
         inline unsigned rank() const { return _shape.size(); }
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _stride; }
+
+        
+        std::shared_ptr<TensorImpl> subrange(const TensorRange &tr){        
+            std::shared_ptr<TensorImpl> me = shared_from_this();
+            auto ret = std::make_shared<TensorImpl>(me, tr);
+            _views.push_back(ret);
+            return ret;
+        }
 
         size_t get_pos_offset(const Shape &pos); // in elements units
         inline void set_signal(std::shared_ptr<Signal> &signal, bool from_view = false) { 
@@ -83,16 +91,24 @@ namespace libtosa {
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
-        std::shared_ptr<TensorImpl> _impl;
+        typedef std::shared_ptr<TensorImpl> ImplPtr;
+        ImplPtr _impl;
+        explicit Tensor(const ImplPtr &impl):_impl(impl){}
+
     public:
         explicit Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace):
             _impl(std::make_shared<TensorImpl>(shape, dtype, workspace)) {}
         explicit Tensor(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace):
                 _impl(std::make_shared<TensorImpl>(shape, stride, dtype, workspace)) {}
-        explicit Tensor(const Tensor &base, const TensorRange &t_range):
-                _impl(std::make_shared<TensorImpl>(base._impl, t_range)) {
-                    base._impl->_views.push_back(_impl);
-                }
+       
+        Tensor operator[](const TensorRange &tr){
+            return Tensor(_impl->subrange(tr));
+        }
+
+        template <typename... R> 
+        Tensor subrange(const R&... r){
+            return Tensor(_impl->subrange(TensorRange{r...}));
+        }
 
         static inline Tensor like(const Tensor&t) { 
             return Tensor(t.shape(), t.dtype(), t.workspace());
@@ -107,7 +123,7 @@ namespace libtosa {
         inline const WorkspacePtr &workspace() const { return _impl->_memory->workspace(); }
 
         template<typename T, typename... size_t>
-        T* at(size_t... p0) const {return (T*)_impl->get(p0...);}
+        T* at(size_t... p) const {return (T*)_impl->get(p...);}
 
         inline void set_signal(std::shared_ptr<Signal> &signal) { _impl->set_signal(signal);}
         inline std::shared_ptr<Signal>& signal() { return _impl->_signal; }

@@ -23,8 +23,8 @@ TEST(TensorTests, TestView1) {
             {
                 *t.at<float>(i,j,k) = i*10000.+j*100.+k;
             }
-    Tensor s1(t, {Range(5, 15), Range(15), Range(10, 20, 2)});
-    Tensor s2(t, {Range(5, 15, 2)});
+    Tensor s1 = t[{Range(5, 15), Range(15), Range(10, 20, 2)}];
+    Tensor s2 = t.subrange(Range(5, 15, 2));
     EXPECT_EQ(s1.stride(), Shape({600,30,2}));
     EXPECT_EQ(s1.shape(), Shape({5,15,5}));
     float *pf = s1.at<float>(0,5,1);
@@ -42,8 +42,8 @@ TEST(TensorTests, TestView1) {
 TEST(TensorTests, TestAdd1) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
-    Tensor s1(t, {Range(1), Range(0, 10)});
-    Tensor s2(t, {Range(1), Range(5, 15)});
+    Tensor s1 = t.subrange(Range(1), Range(0, 10));
+    Tensor s2 = t[{Range(1), Range(5, 15)}];
 
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;
