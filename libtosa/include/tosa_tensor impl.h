@@ -11,12 +11,11 @@
 
 #include "tosa_types.h"
 #include "tosa_memory.h"
-#include "tosa_operator.h"
 #include "tosa_errors.h"
 #include "tosa_utils.h"
+#include "tosa_stream.h"
 
-namespace libtosa {
-    class Signal;
+namespace libtosa {    
     /**
      * TensorImpl is an Immutable object that describes a tensor or a sub view of another tensor
      * Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
@@ -53,8 +52,10 @@ namespace libtosa {
         bool is_view_overlap(const TensorPtr &sibling_view);
 
         size_t get_pos_offset(const Shape &pos); // in elements units
-        void set_signal(std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
-
+        void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
+        CommandPtr getWaitIfNotReady();
+        void mark_not_ready();
+        
         template<typename... Args>
         inline void *get(Args... p) {
             int i=sizeof...(p)-1;            
@@ -68,6 +69,7 @@ namespace libtosa {
         Shape _shape;
         Shape _stride;
         Shape _start_pos;
+        std::mutex _signal_mutex;
         
         TensorPtr _view_base;
         WaekTensorList _overlap_tensors;

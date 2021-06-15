@@ -9,16 +9,9 @@
 #include <list>
 #include <memory>
 
-#include "tosa_types.h"
-#include "tosa_memory.h"
 #include "tosa_tensor impl.h"
-#include "tosa_operator.h"
-#include "tosa_errors.h"
-#include "tosa_utils.h"
 
-namespace libtosa {
-    class Signal;
-     
+namespace libtosa {         
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
@@ -56,9 +49,12 @@ namespace libtosa {
         template<typename T, typename... size_t>
         T* at(size_t... p) const {return (T*)_impl->get(p...);}
 
-        inline void set_signal(std::shared_ptr<Signal> &signal) { _impl->set_signal(signal);}
-        inline std::shared_ptr<Signal>& signal() { return _impl->_signal; }
-        inline const bool is_ready() { return !_impl->_signal;} // todo: think maybe it should lock and create a new wait
+        inline void mark_not_ready() { _impl->mark_not_ready();}
+        inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
+
+        inline CommandPtr getWaitIfNotReady() { return _impl->getWaitIfNotReady(); }
+        inline CommandPtr get_signal_cmd() { return _impl->_signal; }
+        
 
         Tensor operator+(const Tensor &rhs) const;
     };

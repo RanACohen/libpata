@@ -7,36 +7,29 @@
 using namespace libtosa;
 
 
-Operator::Operator(const std::shared_ptr<Operator> &op)
-{
-    _name = op->_name;
-    _outputs = op->_outputs;
-    _inputs = op->_inputs;
-    _attributes = op->_attributes;
-}
-Operator::Operator(const Operator &base)
-{
-    _name = base._name;
-    _outputs = base._outputs;
-    _inputs = base._inputs;
-    _attributes = base._attributes;
-}
-
 void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
 {
     auto manager = StreamManager::Inst();
+    auto stream = manager.createStream();
     for (auto in : inputs)
     {
         /* Since this command have input tensors that are not ready yet,
            we need to add dependecy "wait" for the current command. */ 
-        if (!in.is_ready())
-        {
-            OperatorPtr wait = std::make_shared<Operator>("wait");
-            in.signal()->push_back(wait);
-            manager.createStream()->add_single_op(wait);
+        CommandPtr wait = in.getWaitIfNotReady();
+        if (wait)
+        {                        
+            stream->push(wait);
         }
     }
-    manager.createStream()->push(std::make_shared<Operator>(op_name, inputs, outputs, attributes));
+    for (auto out: outputs)
+    {
+        out.mark_not_ready();
+    }
+    stream->push(std::make_shared<ComputeCmd>(op_name, inputs, outputs, attributes));
+    for (auto out: outputs)
+    {
+        stream->push(out.get_signal_cmd());
+    }
 }
 
 KernelFunction::KernelFunction(const std::string &code)

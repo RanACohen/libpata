@@ -7,24 +7,18 @@
 #include <memory>
 #include <queue>
 
-#include "tosa_tensor.h"
-#include "tosa_operator.h"
-
+#include "tosa_commands.h"
 namespace libtosa {  
     class StreamPool;
 
     class Stream {
-        friend class StreamPool;
         int _id;
-        std::queue<OperatorPtr> _op_queue; 
-
-        Stream(int id);
 
     public:
+        Stream(int id):_id(id){};
+        
         int id() { return _id;}
-        void push(const std::shared_ptr<Operator> & op);
-        void add_single_op (const OperatorPtr& op) { _op_queue.push(op);}
-        const OperatorPtr& pop();
+        virtual void push(const CommandPtr &cmd) = 0; 
     };
 
     typedef std::shared_ptr<Stream> StreamPtr;

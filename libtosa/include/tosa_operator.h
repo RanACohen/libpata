@@ -11,6 +11,7 @@
 #include <iostream>
 
 #include "tosa_tensor.h"
+#include "tosa_stream.h"
 
 using namespace std;
 
@@ -27,11 +28,10 @@ namespace libtosa {
     typedef std::vector<Tensor> TensorsList;
     typedef std::vector<Attr> AttrList; 
 
-    class Operator{
+    class ComputeCmd: public Command {
         public:
-            Operator(const std::string &name) : 
-                _name(name) {}
-            Operator(const std::string &name, 
+            ComputeCmd(const std::string &name): _name(name) {}
+            ComputeCmd(const std::string &name, 
                     const TensorsList &in,
                     const TensorsList &out, 
                     const AttrList &attr):
@@ -39,9 +39,7 @@ namespace libtosa {
                 _inputs (in), 
                 _outputs(out),
                 _attributes(attr) {}
-
-            Operator(const std::shared_ptr<Operator> &op);
-            Operator(const Operator &base);
+                     
             
             inline std::string name() { return _name; }
             TensorsList outputs() { return _outputs;}
@@ -51,16 +49,7 @@ namespace libtosa {
             TensorsList _outputs;
             AttrList _attributes; 
     };    
-    typedef std::weak_ptr<Operator> OperatorPtr;
-
-    class Signal : public Operator {
-        private:
-            std::vector<OperatorPtr> _wait_ops;
-        public:
-            Signal(const std::string& name): Operator(name){}
-            void push_back(OperatorPtr& op) { _wait_ops.push_back(op); }
-    };
-
+    
     void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
     
     class KernelFunction

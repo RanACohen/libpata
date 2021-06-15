@@ -1,5 +1,8 @@
+#include <iostream>
+
 #include "tosa_tensor.h"
 #include "tosa_errors.h"
+#include "tosa_commands.h"
 #include "tosa_operator.h"
 
 using namespace libtosa;
@@ -106,7 +109,22 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
     }
 }
 
-void TensorImpl::set_signal(std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
+void TensorImpl::mark_not_ready()
+{
+    set_signal(std::make_shared<Signal>());
+}
+
+CommandPtr TensorImpl::getWaitIfNotReady()
+{
+    std::lock_guard<std::mutex> guard(_signal_mutex);
+    if (_signal && !_signal->is_ready())
+    {
+        return std::make_shared<Wait>(_signal);
+    }
+    return CommandPtr();
+}
+
+void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
 {
     TOSA_ASSERT(!_signal); // if this tensor is not ready we cannot overide it
     _signal = signal;

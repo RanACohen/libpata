@@ -56,8 +56,8 @@ TEST(UtilsTests, TestTensorOverlap) {
     Tensor t({10, 20, 30}, FLOAT, ws);
     Tensor s1 = t.subrange(Range(1), Range(0, 10));
     Tensor s2 = t[{Range(1), Range(5, 15)}];
-    auto signal = std::make_shared<Signal>("test_sig1");
-    s1.set_signal(signal);
+    
+    s1.mark_not_ready();
     ASSERT_FALSE(s2.is_ready());
     ASSERT_FALSE(t.is_ready());
 }
@@ -67,8 +67,8 @@ TEST(UtilsTests, TestNonTensorOverlap) {
     Tensor t({10, 20, 30}, FLOAT, ws);
     Tensor s1 = t.subrange(Range(1), Range(0, 5));
     Tensor s2 = t[{Range(1), Range(5, 15)}];
-    auto signal = std::make_shared<Signal>("test_sig1");
-    s1.set_signal(signal);
+    
+    s1.mark_not_ready();
     ASSERT_TRUE(s2.is_ready());
     ASSERT_FALSE(t.is_ready());
 }
@@ -79,8 +79,8 @@ TEST(UtilsTests, TestNonTensorOverlapInterleaved) {
     Tensor t({10, 20, 30}, FLOAT, ws);
     Tensor s1 = t.subrange(Range(1), Range(0, 10, 2));
     Tensor s2 = t[{Range(1), Range(5, 15, 2)}];
-    auto signal = std::make_shared<Signal>("test_sig1");
-    s1.set_signal(signal);
+    
+    s1.mark_not_ready();
     ASSERT_TRUE(s2.is_ready());
     ASSERT_FALSE(t.is_ready());
 }

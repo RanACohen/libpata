@@ -11,26 +11,15 @@
 
 using namespace libtosa;
 
-Stream::Stream(int id):_id(id)
-{
-   //std::cout << "Stream " << id << " created." << std::endl;
-}
 
-void Stream::push(const std::shared_ptr<Operator> &op)
-{
-    add_single_op(op);
-    for (auto t: op->outputs())
-    {
-        std::shared_ptr<Signal> signal = std::make_shared<Signal>("signal");
-        add_single_op(signal);
-        t.set_signal(signal);
-    }
-}
+class CPUStream: public Stream {
+        friend class StreamPool;        
+        std::queue<CommandPtr> _cmd_queue; 
 
-const OperatorPtr& Stream::pop()
-{
-    // todo: implement me
-}
+public:       
+    CPUStream(int id):Stream(id){}
+    void push(const CommandPtr &cmd) { _cmd_queue.push(cmd);}                
+};
 
 class libtosa::StreamPool
 {
@@ -42,7 +31,7 @@ class libtosa::StreamPool
         {
             for (unsigned i=0; i<init_size; i++)
             {
-                _pool.push_back(new Stream(i));
+                _pool.push_back(new CPUStream(i));
             }
             _next_id = init_size;
         }
@@ -52,7 +41,7 @@ class libtosa::StreamPool
             std::lock_guard<std::mutex> guard(_pool_mutex);
             if (is_empty())
             {
-                return StreamPtr(new Stream(_next_id++), 
+                return StreamPtr(new CPUStream(_next_id++), 
                     [=](Stream* stream) {  returnStream(stream);});
             }
             return StreamPtr(getStream(), 
@@ -74,6 +63,7 @@ class libtosa::StreamPool
         }
         bool is_empty() { return _pool.empty();}
 };
+
 
 StreamManager &StreamManager::Inst()
 {
