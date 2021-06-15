@@ -11,7 +11,6 @@ int libtosa::dtype_byte_size(DType dtype)
     return ((dtype < 0) || (dtype > DType::LAST)) ? -1 : DTypeByteSize[dtype];
 }
 
-typedef std::shared_ptr<TensorImpl> TensorPtr;
 
 TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace)
 {
@@ -81,7 +80,30 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range)
 
 TensorImpl::~TensorImpl()
 {
-   
+   for (auto &ot : _overlap_tensors)
+   {
+        TensorPtr t = ot.lock();
+        if (t)
+            t->remove_overlap(this);
+        else {
+            std::cout << "oops!\n";
+        }
+   }
+}
+
+void TensorImpl::remove_overlap(TensorImpl *peer)
+{
+    WaekTensorItem item = _overlap_tensors.begin();
+    while (item != _overlap_tensors.end())
+    {
+        TensorPtr t = item->lock();
+        if (!t || t.get()==peer)
+        {
+            item = _overlap_tensors.erase(item);
+        } else {
+            item++;
+        }
+    }
 }
 
 void TensorImpl::set_signal(std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
@@ -201,8 +223,8 @@ void TensorImpl::register_as_view(const TensorPtr &view)
 
         if (vi->is_view_overlap(view))
         {
-            view->add_me_to(vi->_overlap_tensors); // vi->_overlap_tensors.push_back(view);
-            vi->add_me_to(view->_overlap_tensors); // view->_overlap_tensors.push_back(vi);
+            vi->_overlap_tensors.push_back(view);
+            view->_overlap_tensors.push_back(vi);            
         }
     }
     view->add_me_to(_views);
