@@ -18,20 +18,21 @@ class CPUStream: public Stream {
 
 public:       
     CPUStream(int id):Stream(id){}
-    void push(const CommandPtr &cmd) { _cmd_queue.push(cmd);}                
+protected:
+    void push_impl(const CommandPtr &cmd) { _cmd_queue.push(cmd);}                
 };
 
 class libtosa::StreamPool
 {
     std::mutex _pool_mutex;
-    std::vector<Stream *> _pool;
+    std::vector<Stream *> _ready_pool;
     int _next_id;
     public:
         StreamPool(int init_size)
         {
             for (unsigned i=0; i<init_size; i++)
             {
-                _pool.push_back(new CPUStream(i));
+                _ready_pool.push_back(new CPUStream(i));
             }
             _next_id = init_size;
         }
@@ -52,16 +53,16 @@ class libtosa::StreamPool
         void returnStream(Stream *str)
         {
             //std::cout << "returning stream" << str->_id << std::endl;
-            _pool.push_back(str);
+            _ready_pool.push_back(str);
         }
 
         Stream *getStream()
         {
-            auto ret = _pool.back();
-            _pool.pop_back();
+            auto ret = _ready_pool.back();
+            _ready_pool.pop_back();
             return ret;
         }
-        bool is_empty() { return _pool.empty();}
+        bool is_empty() { return _ready_pool.empty();}
 };
 
 

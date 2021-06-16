@@ -39,7 +39,7 @@ TEST(ParallelTests, PushStreamsTest) {
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = abs(t);
     auto str = StreamManager::Inst().createStream();
-    ASSERT_EQ(str->id(), 4); 
+    ASSERT_EQ(str->id(), 3); 
 }
 
 // todo: add signal testing + view signal
