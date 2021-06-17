@@ -4,6 +4,8 @@
 #include <iostream>
 #include <mutex>
 #include <vector>
+#include <thread>
+#include <atomic>
 #include "tosa_stream.h"
 #include "tosa_tensor.h"
 #include "tosa_errors.h"
@@ -13,13 +15,41 @@ using namespace libtosa;
 
 
 class CPUStream: public Stream {
-        friend class StreamPool;        
-        std::queue<CommandPtr> _cmd_queue; 
+    friend class StreamPool;        
+    std::queue<CommandPtr> _cmd_queue; 
+    std::atomic<bool>      mRun; // Use a race condition safe data 
+                                 // criterium to end that thread loop
+    std::thread mThread;
 
 public:       
-    CPUStream(int id):Stream(id){}
+    CPUStream(int id):
+        Stream(id), mRun(true) 
+    {
+        mThread = std::thread(&CPUStream::execute_queue, this);
+    }
+    ~CPUStream()
+    {
+        mRun = false; // <<<< Signal the thread loop to stop
+        mThread.join(); // <<<< Wait for that thread to end
+    }
+
 protected:
     void push_impl(const CommandPtr &cmd) { _cmd_queue.push(cmd);}                
+private:
+    void execute_queue()
+    {
+        while (mRun == true)
+        {
+            while (!_cmd_queue.empty())
+            {
+                auto cmd = _cmd_queue.front();
+                _cmd_queue.pop();
+                auto cpu_cmd = dynamic_cast<CPUCommand*>(cmd.get());
+                cpu_cmd->execute();
+            }
+        }
+        back_to_idle();
+    }
 };
 
 class libtosa::StreamPool
@@ -80,6 +110,6 @@ StreamManager::StreamManager()
 
 StreamPtr StreamManager::createStream()
 {
-    return _pool->createStream();
+   return _pool->createStream();
 }
 
