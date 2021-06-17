@@ -26,6 +26,9 @@ struct MutexFreeQueue {
         _get = 0;
         _put = 0;
     }
+    ~MutexFreeQueue() {
+        delete[] _cyclic_buffer;
+    }
     void push(const T&item)
     {
         auto next_put = (_put+1)%_size;
@@ -85,7 +88,7 @@ private:
             {
                 CommandPtr cmd;
                 if (!_cmd_queue.pop(cmd))
-                    break;                                
+                    break;
                 auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                 cpu_cmd->execute();
             }
