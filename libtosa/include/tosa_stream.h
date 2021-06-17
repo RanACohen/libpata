@@ -21,27 +21,28 @@ namespace libtosa {
 
     public:
         Stream(int id):_id(id),_idle(true){};
+        virtual ~Stream() = default;
         
         int id() { return _id;}
         void push(const CommandPtr &cmd)
         {
             _idle = false;
-            std::cout << "Stream " << id() << " BUSY \n";
+            //std::cout << "Stream " << id() << " BUSY \n";
             _myself = shared_from_this();
             push_impl(cmd);
         }
         void back_to_idle()
         { 
-            std::cout << "Stream " << id() << " IDLE \n";
+            //std::cout << "Stream " << id() << " IDLE \n";
             _myself.reset(); 
             _idle = true;
             _cv.notify_all();
         } 
         void wait_for_idle(){
-            std::cout << "Stream " << id() << " wait for IDLE is " << (_idle ? "IDLE":"BUSY") << "\n";
+            //std::cout << "Stream " << id() << " wait for IDLE is " << (_idle ? "IDLE":"BUSY") << "\n";
             std::unique_lock<std::mutex> lk(_wait_mutex);
             _cv.wait(lk, [=]{return _idle;});
-            std::cout << "Stream " << id() << " WAIT DONE \n";
+            //std::cout << "Stream " << id() << " WAIT DONE \n";
         };
 
     protected:

@@ -67,6 +67,7 @@ public:
     {
         std::cout << "Stream " << id() << " closing...\n";
         mRun = false; // <<<< Signal the thread loop to stop
+        _cv.notify_one();
         mThread.join(); // <<<< Wait for that thread to end
         std::cout << "Stream " << id() << " ended\n";
     }
@@ -90,9 +91,10 @@ private:
         {            
             {
                 std::unique_lock<std::mutex> lk(_mutex); // mutex gets freed when wait is waiting, otherwise it is blocked.
-                _cv.wait(lk, [=] { return !_cmd_queue.empty(); });            
+                _cv.wait(lk, [=] { return !mRun || !_cmd_queue.empty(); });      
+                if (!mRun) break;
             }
-            std::cout << "Stream " << id() << " proceesing queue \n";
+            //std::cout << "Stream " << id() << " proceesing queue \n";
             while (!_cmd_queue.empty())
             {
                 CommandPtr cmd;
@@ -102,9 +104,10 @@ private:
                 TOSA_ASSERT(cpu_cmd && "not a CPU command!");
                 cpu_cmd->execute();
             }
-            std::cout << "Stream " << id() << " queue Idle... \n";
+            //std::cout << "Stream " << id() << " queue Idle... \n";
             back_to_idle();
         }
+        std::cout << "Stream " << id() << " exiting. \n";
     }
 };
 
@@ -122,6 +125,21 @@ class libtosa::StreamPool
                 _ready_pool.push_back(str);
                 _all.push_back(str);
             }            
+        }
+
+        ~StreamPool()
+        {
+            std::cout << "Pool is shutting down...\n";
+            wait_for_all();
+            if (_ready_pool.size() != _all.size())
+            {
+                std::cout << "warning! stream is used by someone but system is shutting down...\n";
+            }
+            for (auto &str : _all)
+            {
+                std::cout << "deleting " << str->id() << " ...\n";
+                delete str;
+            }
         }
 
         StreamPtr createStream()
