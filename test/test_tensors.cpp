@@ -90,12 +90,14 @@ TEST(TensorOperationTests, TestReluN) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = reluN(t);
+    StreamManager::Inst().wait_for_all();
 }
 
 TEST(TensorOperationTests, TestAbs) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = abs(t);
+    StreamManager::Inst().wait_for_all();
 }
 
 
@@ -107,4 +109,5 @@ TEST(TensorOperationTests, TestAdd1) {
 
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;
+    StreamManager::Inst().wait_for_all();
 }

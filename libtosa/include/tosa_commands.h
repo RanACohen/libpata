@@ -11,26 +11,40 @@
 using namespace std;
 
 namespace libtosa {    
-    class Command {
+    class Command: public std::enable_shared_from_this<Command> {
         public:
         virtual ~Command() = default;
     };
     typedef std::shared_ptr<Command> CommandPtr;
 
-    class CPUCommand: public Command
+    class CPUCommand: public virtual Command
     {
         public:
             virtual ~CPUCommand() = default;
             virtual void execute() = 0;
     };
 
-    class Signal : public Command {
+    class Wait;
+    class Signal : public virtual Command {
         private:            
             bool _ready = false;
         public:            
-            Signal(){}            
+            Signal(){} 
+            virtual ~Signal()=0; // mark trhis abstract, must inherit!
+
+            virtual std::shared_ptr<Wait> getWaitCmd() = 0;
+
             inline void signal() { _ready = true;}
             inline bool is_ready() { return _ready; }
+    };
+
+    class Wait: public virtual Command {
+        public:
+            Wait(const std::shared_ptr<Signal>& wait_on):_wait_on(wait_on){}
+            virtual ~Wait()=0; // abstract, must inherit
+        protected:
+            std::shared_ptr<Signal> _wait_on;
+
     };
 
     class CPUSignal: virtual public Signal, CPUCommand
@@ -38,33 +52,16 @@ namespace libtosa {
         std::condition_variable _cv;
         std::mutex _mutex;
         public:
-            void wait() {
-                 std::unique_lock<std::mutex> lk(_mutex);
-                _cv.wait(lk, [=]{return is_ready();});
-            }
-            virtual void execute() {
-                signal();
-                _cv.notify_all();
-            }
-    };
-
-    class Wait: public Command {
-        public:
-            Wait(const std::shared_ptr<Signal>& wait_on):_wait_on(wait_on){}
-        
-        protected:
-            std::shared_ptr<Signal> _wait_on;
-
+            void wait();
+            virtual void execute();
+            virtual std::shared_ptr<Wait> getWaitCmd();
     };
 
     class CPUWait: virtual public Wait, CPUCommand
     {
         public:
-         virtual void execute() {
-             Signal * ps = _wait_on.get();
-             auto sig = dynamic_cast<CPUSignal*>(ps);
-            sig->wait();
-         }
+        CPUWait(const std::shared_ptr<Signal>& wait_on): Wait(wait_on){}
+        virtual void execute();
     };
 
 };

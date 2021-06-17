@@ -25,7 +25,7 @@ void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, co
     {
         out.mark_not_ready();
     }
-    stream->push(std::make_shared<ComputeCmd>(op_name, inputs, outputs, attributes));
+    stream->push(std::make_shared<CPUComputeCmd>(op_name, inputs, outputs, attributes));
     for (auto out: outputs)
     {
         stream->push(out.get_signal_cmd());

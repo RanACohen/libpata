@@ -111,15 +111,17 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
 
 void TensorImpl::mark_not_ready()
 {
-    set_signal(std::make_shared<Signal>());
+    // todo: add a backend!
+    set_signal(std::make_shared<CPUSignal>());
 }
 
 CommandPtr TensorImpl::getWaitIfNotReady()
 {
+    //todo: move moutext to wait signal
     std::lock_guard<std::mutex> guard(_signal_mutex);
     if (_signal && !_signal->is_ready())
     {
-        return std::make_shared<Wait>(_signal);
+        return _signal->getWaitCmd();
     }
     return CommandPtr();
 }

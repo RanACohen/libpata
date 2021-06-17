@@ -25,6 +25,22 @@ TEST(ParallelTests, BasicTest) {
 
 }
 
+class TestCommand: public CPUCommand
+{
+    int *_var;
+    int _test_val;
+    int _msec_sleep;
+    public:
+        TestCommand(int *variable, int test_val, int sleep_ms=0):
+        _var(variable), _test_val(test_val), _msec_sleep(sleep_ms){}
+
+        virtual void execute() {
+            usleep(_msec_sleep*1000);             
+            *_var = _test_val;
+        }
+};
+
+
 TEST(ParallelTests, CreateStreamsTest) {
     auto str = StreamManager::Inst().createStream();
     auto str2 = StreamManager::Inst().createStream();
@@ -32,14 +48,31 @@ TEST(ParallelTests, CreateStreamsTest) {
     str.reset();
     str2 = StreamManager::Inst().createStream();
     ASSERT_EQ(str2->id(), 4);
+    StreamManager::Inst().wait_for_all();
+}
+
+
+TEST(ParallelTests, WaitAllTest) {
+    auto ws = std::make_shared<Workspace>(1000000);        
+    auto str = StreamManager::Inst().createStream();
+    int v=0;
+    auto cmd = std::make_shared<TestCommand>(&v, 8, 30);
+    str->push(cmd);
+    StreamManager::Inst().wait_for_all();
+    ASSERT_EQ(v, 8);
 }
 
 TEST(ParallelTests, PushStreamsTest) {
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({10, 20, 30}, FLOAT, ws);
-    auto x = abs(t);
+    auto ws = std::make_shared<Workspace>(1000000);        
     auto str = StreamManager::Inst().createStream();
-    ASSERT_EQ(str->id(), 3); 
+    int v=0;
+    auto cmd = std::make_shared<TestCommand>(&v, 8, 30);
+    auto sig = std::make_shared<CPUSignal>();
+    str->push(cmd);
+    str->push(sig);
+    sig->wait();
+    ASSERT_EQ(v, 8);
+    StreamManager::Inst().wait_for_all();
 }
 
 // todo: add signal testing + view signal

@@ -28,7 +28,7 @@ namespace libtosa {
     typedef std::vector<Tensor> TensorsList;
     typedef std::vector<Attr> AttrList; 
 
-    class ComputeCmd: public Command {
+    class ComputeCmd: virtual public Command {
         public:
             ComputeCmd(const std::string &name): _name(name) {}
             ComputeCmd(const std::string &name, 
@@ -49,6 +49,21 @@ namespace libtosa {
             TensorsList _outputs;
             AttrList _attributes; 
     };    
+
+    class CPUComputeCmd: virtual public ComputeCmd, CPUCommand
+    {
+        public:
+            CPUComputeCmd(const std::string &name): ComputeCmd(name) {}
+            CPUComputeCmd(const std::string &name, 
+                    const TensorsList &in,
+                    const TensorsList &out, 
+                    const AttrList &attr):
+                ComputeCmd(name, in, out, attr) {}
+
+            virtual void execute() {
+                std::cout << " excuting " << _name << std::endl;
+            }
+    };
     
     void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
     
