@@ -8,11 +8,11 @@
 using namespace libtosa;
 
 
-void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
+void libtosa::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
     auto manager = StreamManager::Inst();
     auto stream = manager.createStream();
-    for (auto in : inputs)
+    for (auto in : cmd->inputs())
     {
         /* Since this command have input tensors that are not ready yet,
            we need to add dependecy "wait" for the current command. */ 
@@ -22,14 +22,14 @@ void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, co
             stream->push(wait);
         }
     }
-    
-    for (auto out: outputs)
+
+    for (auto out: cmd->outputs())
     {
         out.mark_not_ready();
     }
 
-    stream->push( BackendManager::Inst().backend()->createComputeCmd(op_name, inputs, outputs, attributes));
-    for (auto out: outputs)
+    stream->push(cmd);
+    for (auto out: cmd->outputs())
     {
         stream->push(out.get_signal_cmd());
     }
@@ -54,14 +54,17 @@ Tensor libtosa::reluN(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
 
-    schedule("tosa.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("tosa.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
+    schedule(cmd);
+
     return out;
 }
 
 Tensor libtosa::abs(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
-
-    schedule("tosa.abs", {in}, {out}, {});
+    
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("tosa.abs", {in}, {out}, {});
+    schedule(cmd);
     return out;
 }

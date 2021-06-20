@@ -291,6 +291,7 @@ Tensor Tensor::operator+(const Tensor &rhs) const
     auto out_tensor = Tensor(shape(), dtype(), workspace());
 
     // todo: Can I send my own object? Or maybe copy? does it make sense?
-    schedule("tosa.add", {*this, rhs}, {out_tensor}, attributes);
+    auto cmd = BackendManager::Inst().backend()->AddCmd(*this, rhs, out_tensor);
+    schedule(cmd);
     return out_tensor;
 }

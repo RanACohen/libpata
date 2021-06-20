@@ -33,3 +33,10 @@ void TestCommand::execute()
     usleep(_msec_sleep * 1000);
     *_var = _test_val;
 }
+
+
+ void CPUAddCmd::execute()
+ {
+     //todo: implement me
+     std::cout << "add two tensors here please...\n";
+ }

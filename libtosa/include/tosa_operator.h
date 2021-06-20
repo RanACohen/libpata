@@ -30,7 +30,7 @@ namespace libtosa {
 
     class ComputeCmd: virtual public Command {
         public:
-            ComputeCmd(const std::string &name): _name(name) {}
+            //ComputeCmd(const std::string &name): _name(name) {}
             ComputeCmd(const std::string &name, 
                     const TensorsList &in,
                     const TensorsList &out, 
@@ -41,16 +41,19 @@ namespace libtosa {
                 _attributes(attr) {}
                      
             
-            inline std::string name() { return _name; }
-            TensorsList outputs() { return _outputs;}
+            inline const std::string &name() { return _name; }
+            TensorsList &outputs() { return _outputs;}
+            const TensorsList &inputs() const { return _inputs;}
+
         protected:
             std::string _name;
             TensorsList _inputs;
             TensorsList _outputs;
             AttrList _attributes; 
     };    
+    typedef std::shared_ptr<ComputeCmd> ComputeCmdPtr;
     
-    void schedule(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
+    void schedule(const ComputeCmdPtr &cmd);
     
     class KernelFunction
     {

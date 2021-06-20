@@ -23,11 +23,11 @@ namespace libtosa
         class CPUComputeCmd : virtual public ComputeCmd, CPUCommand
         {
         public:
-            CPUComputeCmd(const std::string &name) : ComputeCmd(name) {}
             CPUComputeCmd(const std::string &name,
                           const TensorsList &in,
                           const TensorsList &out,
-                          const AttrList &attr) : ComputeCmd(name, in, out, attr) {}
+                          const AttrList &attr): ComputeCmd(name, in, out, attr) 
+            {}
 
             virtual void execute()
             {
@@ -62,6 +62,15 @@ namespace libtosa
         public:
             TestCommand(int *variable, int test_val, int sleep_ms = 0) : _var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
 
+            virtual void execute();
+        };
+
+        class CPUAddCmd: virtual public ComputeCmd, CPUCommand
+        {
+            public:
+            CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
+                ComputeCmd("tosa.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                {}
             virtual void execute();
         };
 

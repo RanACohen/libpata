@@ -18,8 +18,10 @@ namespace libtosa {
             public:
             virtual Stream *createStream(int id);
             virtual std::shared_ptr<Signal> createSignal();
-            virtual CommandPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
+            virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
             virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms);
+
+            virtual ComputeCmdPtr AddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output);
         };
     }
 }
