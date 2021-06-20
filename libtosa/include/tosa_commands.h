@@ -1,14 +1,12 @@
 //
-// Created by galstar on 31/5/2021.
+// Created by rcohen on 15/6/2021.
 //
 #pragma once
 #ifndef LIBTOSA_TOSA_COMMAND_H
 #define LIBTOSA_TOSA_COMMAND_H
-#include <string>
 #include <memory>
+#include <mutex>
 #include <condition_variable>
-
-using namespace std;
 
 namespace libtosa {    
     class Command: public std::enable_shared_from_this<Command> {
