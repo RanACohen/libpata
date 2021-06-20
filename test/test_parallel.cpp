@@ -4,6 +4,7 @@
 #include "tosa_tensor.h"
 #include "tosa_operator.h"
 #include "tosa_stream.h"
+#include "tosa_backend.h"
 
 using namespace libtosa;
 // Demonstrate some basic assertions.
@@ -25,22 +26,6 @@ TEST(ParallelTests, BasicTest) {
 
 }
 
-class TestCommand: public CPUCommand
-{
-    int *_var;
-    int _test_val;
-    int _msec_sleep;
-    public:
-        TestCommand(int *variable, int test_val, int sleep_ms=0):
-        _var(variable), _test_val(test_val), _msec_sleep(sleep_ms){}
-
-        virtual void execute() {
-            usleep(_msec_sleep*1000);             
-            *_var = _test_val;
-        }
-};
-
-
 TEST(ParallelTests, CreateStreamsTest) {
     auto str = StreamManager::Inst().createStream();
     auto str2 = StreamManager::Inst().createStream();
@@ -56,7 +41,7 @@ TEST(ParallelTests, WaitAllTest) {
     auto ws = std::make_shared<Workspace>(1000000);        
     auto str = StreamManager::Inst().createStream();
     int v=0;
-    auto cmd = std::make_shared<TestCommand>(&v, 8, 30);
+    auto cmd = BackendManager::Inst().backend()->createTestCmd(&v, 8, 30);
     str->push(cmd);
     StreamManager::Inst().wait_for_all();
     ASSERT_EQ(v, 8);
@@ -66,11 +51,11 @@ TEST(ParallelTests, PushStreamsTest) {
     auto ws = std::make_shared<Workspace>(1000000);        
     auto str = StreamManager::Inst().createStream();
     int v=0;
-    auto cmd = std::make_shared<TestCommand>(&v, 8, 30);
-    auto sig = std::make_shared<CPUSignal>();
+    auto cmd = BackendManager::Inst().backend()->createTestCmd(&v, 8, 30);
+    auto sig = BackendManager::Inst().backend()->createSignal();
     str->push(cmd);
     str->push(sig);
-    sig->wait();
+    str->wait_for_idle();
     ASSERT_EQ(v, 8);
     StreamManager::Inst().wait_for_all();
 }
@@ -78,3 +63,4 @@ TEST(ParallelTests, PushStreamsTest) {
 // todo: add signal testing + view signal
 
 // todo: add view overlap testing
+

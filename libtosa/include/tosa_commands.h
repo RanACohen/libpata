@@ -15,12 +15,6 @@ namespace libtosa {
     };
     typedef std::shared_ptr<Command> CommandPtr;
 
-    class CPUCommand: public virtual Command
-    {
-        public:
-            virtual ~CPUCommand() = default;
-            virtual void execute() = 0;
-    };
 
     class Wait;
     class Signal : public virtual Command {
@@ -44,24 +38,6 @@ namespace libtosa {
             std::shared_ptr<Signal> _wait_on;
 
     };
-
-    class CPUSignal: virtual public Signal, CPUCommand
-    {
-        std::condition_variable _cv;
-        std::mutex _mutex;
-        public:
-            void wait();
-            virtual void execute();
-            virtual std::shared_ptr<Wait> getWaitCmd();
-    };
-
-    class CPUWait: virtual public Wait, CPUCommand
-    {
-        public:
-        CPUWait(const std::shared_ptr<Signal>& wait_on): Wait(wait_on){}
-        virtual void execute();
-    };
-
 };
 
 #endif //LIBTOSA_TOSA_COMMAND_H

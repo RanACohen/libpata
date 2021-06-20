@@ -2,7 +2,8 @@
 #include "tosa_errors.h"
 #include "tosa_operator.h"
 #include "tosa_stream.h"
-//#include "ThreadPool.h"
+#include "tosa_backend.h"
+
 
 using namespace libtosa;
 
@@ -21,11 +22,13 @@ void libtosa::schedule(const std::string &op_name, const TensorsList &inputs, co
             stream->push(wait);
         }
     }
+    
     for (auto out: outputs)
     {
         out.mark_not_ready();
     }
-    stream->push(std::make_shared<CPUComputeCmd>(op_name, inputs, outputs, attributes));
+
+    stream->push( BackendManager::Inst().backend()->createComputeCmd(op_name, inputs, outputs, attributes));
     for (auto out: outputs)
     {
         stream->push(out.get_signal_cmd());

@@ -2,13 +2,21 @@
 #include <mutex>
 #include <vector>
 #include <thread>
-#include <atomic>
+#include <unistd.h>
 
 #include "cpu_backend.h"
 #include "tosa_errors.h"
 
 using namespace libtosa;
 using namespace libtosa::impl;
+
+class CPUCommand: virtual public Command
+{
+    public:
+        virtual ~CPUCommand() = default;
+        virtual void execute() = 0;
+};
+
 
 template<class T>
 struct MutexFreeQueue {
@@ -111,4 +119,93 @@ private:
 
 Stream *CPUBackend::createStream(int id) {
     return new CPUStream(id);
+}
+
+class CPUComputeCmd: virtual public ComputeCmd, CPUCommand
+{
+    public:
+        CPUComputeCmd(const std::string &name): ComputeCmd(name) {}
+        CPUComputeCmd(const std::string &name, 
+                const TensorsList &in,
+                const TensorsList &out, 
+                const AttrList &attr):
+            ComputeCmd(name, in, out, attr) {}
+
+        virtual void execute() {
+            std::cout << " excuting " << _name << std::endl;
+        }
+};
+
+class CPUSignal: virtual public Signal, CPUCommand
+{
+    std::condition_variable _cv;
+    std::mutex _mutex;
+    public:
+        void wait();
+        virtual void execute();
+        virtual std::shared_ptr<Wait> getWaitCmd();
+};
+
+
+class TestCommand: virtual public Command, CPUCommand
+{
+    int *_var;
+    int _test_val;
+    int _msec_sleep;
+    public:
+        TestCommand(int *variable, int test_val, int sleep_ms=0):
+        _var(variable), _test_val(test_val), _msec_sleep(sleep_ms){}
+
+        virtual void execute() {
+            usleep(_msec_sleep*1000);             
+            *_var = _test_val;
+        }
+};
+
+
+CommandPtr CPUBackend::createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
+{
+    return std::make_shared<CPUComputeCmd>(op_name, inputs, outputs, attributes);
+}
+
+std::shared_ptr<Signal> CPUBackend::createSignal()
+{
+    return std::make_shared<CPUSignal>();
+}
+
+CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)
+{
+    return std::make_shared<TestCommand>(variable, test_val, sleep_ms);
+}
+
+    class CPUWait: virtual public Wait, CPUCommand
+    {
+        public:
+        CPUWait(const std::shared_ptr<Signal>& wait_on): Wait(wait_on){}
+        virtual void execute();
+    };
+
+//todo: seprate to .cpp and .h file for cpu commands.
+
+void CPUWait::execute()
+{
+    Signal *ps = _wait_on.get();
+    auto sig = dynamic_cast<CPUSignal *>(ps);
+    sig->wait();
+}
+
+void CPUSignal::wait()
+{
+    std::unique_lock<std::mutex> lk(_mutex);
+    _cv.wait(lk, [=]
+             { return is_ready(); });
+}
+void CPUSignal::execute()
+{
+    signal();
+    _cv.notify_all();
+}
+std::shared_ptr<Wait> CPUSignal::getWaitCmd()
+{
+    return std::make_shared<CPUWait>(std::dynamic_pointer_cast<Signal>(shared_from_this()));
 }

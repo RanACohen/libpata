@@ -4,6 +4,7 @@
 #include "tosa_errors.h"
 #include "tosa_commands.h"
 #include "tosa_operator.h"
+#include "tosa_backend.h"
 
 using namespace libtosa;
 
@@ -112,7 +113,7 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
 void TensorImpl::mark_not_ready()
 {
     // todo: add a backend!
-    set_signal(std::make_shared<CPUSignal>());
+    set_signal(BackendManager::Inst().backend()->createSignal());
 }
 
 CommandPtr TensorImpl::getWaitIfNotReady()
