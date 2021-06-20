@@ -7,7 +7,6 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
-
 namespace libtosa {    
     class Command: public std::enable_shared_from_this<Command> {
         public:
