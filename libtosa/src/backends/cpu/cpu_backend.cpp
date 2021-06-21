@@ -1,14 +1,27 @@
 #include "cpu_backend.h"
 #include "cpu_commands.h"
 #include "cpu_stream.h"
+#include "tosa_stream_pool.h"
 
 using namespace libtosa;
 using namespace libtosa::impl;
 
-Stream *CPUBackend::createStream(int id) {
-    return new CPUStream(id);
+StreamPtr CPUBackend::createStream() 
+{
+    if (!_pool)
+    {
+        std::lock_guard<std::mutex> guard(_pool_mutex);
+        if (!_pool)
+            _pool = std::make_shared<libtosa::StreamPool>(5, [](int i)-> Stream* {return new CPUStream(i); });
+    }
+            
+    return _pool->createStream();
 }
 
+void CPUBackend::wait_for_all() 
+{
+    return _pool->wait_for_all();
+}
 
 ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
 {

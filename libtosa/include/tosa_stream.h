@@ -9,9 +9,9 @@
 #include <iostream>
 
 #include "tosa_commands.h"
-namespace libtosa {  
-    class StreamPool;
 
+namespace libtosa {  
+    
     class Stream: public std::enable_shared_from_this<Stream> {
         int _id;
         std::shared_ptr<Stream> _myself;
@@ -48,19 +48,9 @@ namespace libtosa {
     protected:
         virtual void push_impl(const CommandPtr &cmd) = 0;
     };
-
+    
     typedef std::shared_ptr<Stream> StreamPtr;
-
-    class StreamManager {
-        public:
-            static StreamManager &Inst();
-            StreamPtr createStream(); 
-            void wait_for_all();
-
-    private:
-        std::shared_ptr<StreamPool> _pool;
-        StreamManager();
-    };
+    typedef Stream*(*StreamCreatorFunc)(int);
 };
 
 #endif //LIBTOSA_TOSA_STREAM_HPP

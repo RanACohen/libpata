@@ -9,14 +9,20 @@
 #include <condition_variable>
 
 #include "tosa_backend.h"
+#include "tosa_stream.h"
+#include "tosa_stream_pool.h"
 
 namespace libtosa {
     namespace impl {
         class CPUBackend: public Backend {
             friend class libtosa::BackendManager;
             CPUBackend() = default;
+            std::mutex _pool_mutex;
+            std::shared_ptr<libtosa::StreamPool> _pool;
+
             public:
-            virtual Stream *createStream(int id);
+            virtual StreamPtr createStream();
+            virtual void wait_for_all();
             virtual std::shared_ptr<Signal> createSignal();
             virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
             virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms);

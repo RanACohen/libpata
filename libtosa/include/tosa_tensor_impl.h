@@ -57,13 +57,7 @@ namespace libtosa {
         void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
         CommandPtr getWaitIfNotReady();
         void mark_not_ready();
-        inline void sync() {
-            auto wait = getWaitIfNotReady();
-            if (!wait) return;
-            auto str = StreamManager::Inst().createStream();
-            str->push(wait);
-            str->wait_for_idle();
-        };
+        void sync();
         
         template<typename... Args>
         inline void *get(Args... p) {

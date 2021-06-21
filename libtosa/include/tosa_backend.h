@@ -17,7 +17,8 @@ namespace libtosa {
         public:
         virtual ~Backend() = default;
 
-        virtual Stream *createStream(int id) = 0;
+        virtual StreamPtr createStream() = 0;
+        virtual void wait_for_all() = 0;
 
         virtual std::shared_ptr<Signal> createSignal() = 0;
 
@@ -37,10 +38,10 @@ namespace libtosa {
             } BACKEND_TYPE;
             static BackendManager &Inst();            
             void set_backend(BACKEND_TYPE type);
-            inline Backend *backend() const {return _backends[_active_backend];}
+            inline Backend *backend() const {return _active_backend;}
 
     private:
-        BACKEND_TYPE _active_backend;
+        Backend *_active_backend;
         Backend *_backends[NO_BACKENDS];
         BackendManager();
     };

@@ -181,6 +181,13 @@ size_t TensorImpl::get_pos_offset(const Shape &pos) const
     }
     return ret;
 }
+void TensorImpl::sync() {
+    auto wait = getWaitIfNotReady();
+    if (!wait) return;
+    auto str = BackendManager::Inst().backend()->createStream();
+    str->push(wait);
+    str->wait_for_idle();
+}
 
 struct TensorSpace
 {
