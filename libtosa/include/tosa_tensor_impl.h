@@ -55,11 +55,19 @@ namespace libtosa {
         void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
         CommandPtr getWaitIfNotReady();
         void mark_not_ready();
+        inline void sync() {
+            auto wait = getWaitIfNotReady();
+            if (!wait) return;
+            auto str = StreamManager::Inst().createStream();
+            str->push(wait);
+            str->wait_for_idle();
+        };
         
         template<typename... Args>
         inline void *get(Args... p) {
             int i=sizeof...(p)-1;            
             size_t offset=__adder( _stride[i--]*p...); // pack goes in reverse...
+            sync();
             return (char*)(_memory->ptr())+ _element_size*(_base_offset+offset);
         }
 

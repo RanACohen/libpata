@@ -9,7 +9,7 @@
 #include <list>
 #include <memory>
 
-#include "tosa_tensor impl.h"
+#include "tosa_tensor_impl.h"
 
 namespace libtosa {         
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
@@ -51,6 +51,7 @@ namespace libtosa {
 
         inline void mark_not_ready() { _impl->mark_not_ready();}
         inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
+        inline void sync() const { return _impl->sync(); }
 
         inline CommandPtr getWaitIfNotReady() { return _impl->getWaitIfNotReady(); }
         inline CommandPtr get_signal_cmd() { return _impl->_signal; }

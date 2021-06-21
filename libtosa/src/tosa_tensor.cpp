@@ -111,8 +111,7 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
 }
 
 void TensorImpl::mark_not_ready()
-{
-    // todo: add a backend!
+{    
     set_signal(BackendManager::Inst().backend()->createSignal());
 }
 
