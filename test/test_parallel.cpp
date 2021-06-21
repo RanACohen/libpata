@@ -27,37 +27,46 @@ TEST(ParallelTests, BasicTest) {
 }
 
 TEST(ParallelTests, CreateStreamsTest) {
-    auto str = StreamManager::Inst().createStream();
-    auto str2 = StreamManager::Inst().createStream();
+    auto backend = BackendManager::Inst().backend();
+    auto str = backend->createStream();
+    auto str2 = backend->createStream();
     ASSERT_EQ(str2->id(), 3);
-    str.reset();
-    str2 = StreamManager::Inst().createStream();
-    ASSERT_EQ(str2->id(), 4);
-    StreamManager::Inst().wait_for_all();
-}
 
+    str.reset();
+    str2 = backend->createStream();
+    ASSERT_EQ(str2->id(), 4);
+
+    backend->wait_for_all();
+}
 
 TEST(ParallelTests, WaitAllTest) {
     auto ws = std::make_shared<Workspace>(1000000);        
-    auto str = StreamManager::Inst().createStream();
+    auto backend = BackendManager::Inst().backend();
     int v=0;
-    auto cmd = BackendManager::Inst().backend()->createTestCmd(&v, 8, 30);
+
+    auto str = backend->createStream();
+    auto cmd = backend->createTestCmd(&v, 8, 30);
+    
     str->push(cmd);
-    StreamManager::Inst().wait_for_all();
+    backend->wait_for_all();
+
     ASSERT_EQ(v, 8);
 }
 
 TEST(ParallelTests, PushStreamsTest) {
+    auto backend = BackendManager::Inst().backend();
     auto ws = std::make_shared<Workspace>(1000000);        
-    auto str = StreamManager::Inst().createStream();
+    auto str = backend->createStream();
     int v=0;
-    auto cmd = BackendManager::Inst().backend()->createTestCmd(&v, 8, 30);
-    auto sig = BackendManager::Inst().backend()->createSignal();
+
+    auto cmd = backend->createTestCmd(&v, 8, 30);
+    auto sig = backend->createSignal();
     str->push(cmd);
     str->push(sig);
     str->wait_for_idle();
+    
     ASSERT_EQ(v, 8);
-    StreamManager::Inst().wait_for_all();
+    backend->wait_for_all();
 }
 
 // todo: add signal testing + view signal

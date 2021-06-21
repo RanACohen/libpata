@@ -5,6 +5,7 @@
 #include "tosa_utils.h"
 #include "tosa_tensor.h"
 #include "tosa_operator.h"
+#include "tosa_backend.h"
 
 using namespace libtosa;
 // Demonstrate some basic assertions.
@@ -85,21 +86,19 @@ TEST(UtilsTests, TestNonTensorOverlapInterleaved) {
     ASSERT_FALSE(t.is_ready());
 }
 
-
 TEST(TensorOperationTests, TestReluN) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = reluN(t);
-    StreamManager::Inst().wait_for_all();
+    BackendManager::Inst().backend()->wait_for_all();
 }
 
 TEST(TensorOperationTests, TestAbs) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = abs(t);
-    StreamManager::Inst().wait_for_all();
+    BackendManager::Inst().backend()->wait_for_all();
 }
-
 
 TEST(TensorOperationTests, TestAdd1) {
     auto ws = std::make_shared<Workspace>(1000000);
@@ -109,5 +108,6 @@ TEST(TensorOperationTests, TestAdd1) {
 
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;
-    StreamManager::Inst().wait_for_all();
+    //StreamManager::Inst().wait_for_all();
+    BackendManager::Inst().backend()->wait_for_all();
 }

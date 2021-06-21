@@ -9,5 +9,6 @@ file(GLOB INC_FILES include/*.h include/*.hpp)
 
 include_directories(include)
 include_directories(src/backends)
+include_directories(src/utils)
 
 add_library(tosa SHARED ${SRC_FILES} ${SRC_BACKENDS_FILES} ${SRC_CPU_BACKENDS_FILES} ${INC_FILES} include/tosa_errors.h)

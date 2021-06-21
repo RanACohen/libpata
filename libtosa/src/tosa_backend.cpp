@@ -13,16 +13,16 @@ BackendManager &BackendManager::Inst()
 
 BackendManager::BackendManager()
 {
-    _active_backend = CPU;
     _backends[CPU] = new impl::CPUBackend();
     _backends[GAUDI] = nullptr; // lazy creation in set
+    _active_backend = _backends[CPU];
 }
 
 
 void BackendManager::set_backend(BACKEND_TYPE type)
 {
     // todo: makre reentrent
-    _active_backend = type;
+    _active_backend = _backends[type];
     if (_backends[type]!=nullptr) return;
 
     switch (type)    

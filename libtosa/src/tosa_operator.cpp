@@ -10,8 +10,8 @@ using namespace libtosa;
 
 void libtosa::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
-    auto manager = StreamManager::Inst();
-    auto stream = manager.createStream();
+    auto manager = BackendManager::Inst();
+    auto stream = manager.backend()->createStream();
     for (auto in : cmd->inputs())
     {
         /* Since this command have input tensors that are not ready yet,
@@ -46,9 +46,7 @@ KernelFunction::KernelFunction(const char *code)
 
 void libtosa::parallel_for(const Range &index, const KernelFunction &func)
 {
-
 }
-
 
 Tensor libtosa::reluN(const Tensor &in)
 {
