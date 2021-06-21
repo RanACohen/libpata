@@ -40,8 +40,10 @@ namespace libtosa {
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _stride; }
         inline const Shape &start_pos() const { return _start_pos; }
+        inline bool is_contiguous() const {
+            return _stride[0]*_shape[0] == _volume;
+        }
 
-        
         TensorPtr subrange(const TensorRange &tr){        
             TensorPtr me = shared_from_this();
             auto ret = std::make_shared<TensorImpl>(me, tr);
@@ -51,7 +53,7 @@ namespace libtosa {
 
         bool is_view_overlap(const TensorPtr &sibling_view);
 
-        size_t get_pos_offset(const Shape &pos); // in elements units
+        size_t get_pos_offset(const Shape &pos) const; // in elements units
         void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
         CommandPtr getWaitIfNotReady();
         void mark_not_ready();
@@ -75,6 +77,7 @@ namespace libtosa {
         size_t _element_size;
         DType _dtype;
         Shape _shape;
+        size_t _volume;
         Shape _stride;
         Shape _start_pos;
         std::mutex _signal_mutex;

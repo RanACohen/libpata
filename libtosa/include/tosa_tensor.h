@@ -52,6 +52,7 @@ namespace libtosa {
         inline void mark_not_ready() { _impl->mark_not_ready();}
         inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
         inline void sync() const { return _impl->sync(); }
+        inline bool is_contiguous() const { return _impl->is_contiguous(); }
 
         inline CommandPtr getWaitIfNotReady() { return _impl->getWaitIfNotReady(); }
         inline CommandPtr get_signal_cmd() { return _impl->_signal; }

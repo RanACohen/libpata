@@ -29,6 +29,10 @@ TEST(TensorTests, TestView1) {
     Tensor s2 = t.subrange(Range(5, 15, 2));
     EXPECT_EQ(s1.stride(), Shape({600,30,2}));
     EXPECT_EQ(s1.shape(), Shape({5,15,5}));
+    EXPECT_TRUE(t.is_contiguous());
+    EXPECT_FALSE(s1.is_contiguous());
+    EXPECT_FALSE(s2.is_contiguous());
+
     float *pf = s1.at<float>(0,5,1);
     EXPECT_EQ(50512. , *pf);
     

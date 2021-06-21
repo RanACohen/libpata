@@ -22,14 +22,15 @@ TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &work
     _shape = shape;
     _element_size = dtype_byte_size(dtype);
     size_t s = 1;
-    _stride.push_back(1);
+    _stride.push_back(1);    
     for (unsigned i = shape.size() - 1; i > 0; --i)
     {
         s *= shape[i];
         _stride.insert(_stride.begin(), s);
     }
-    s *= shape[0] * dtype_byte_size(dtype);
-    _memory = MemoryBlock::allocate(s, workspace);
+    s *= shape[0];
+    _volume = s;
+    _memory = MemoryBlock::allocate(s* dtype_byte_size(dtype), workspace);
 }
 
 /**
@@ -46,6 +47,11 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
     _shape = shape;
     _stride = stride;
     _element_size = dtype_byte_size(dtype);
+    _volume = 1;
+    for (auto s:shape)
+    {
+        _volume*=s;
+    }
 
     auto s = stride[0] * shape[0] * dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
@@ -62,7 +68,7 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range)
     _stride = base->stride();
     _memory = base->_memory;
     _element_size = base->_element_size;
-
+     _volume = 1;
     for (unsigned i = 0; i < base->rank(); i++)
     {
         auto range = i < t_range.size() ? t_range[i] : Range();
@@ -72,7 +78,9 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range)
         // make sure no out of bound
         CLIP(end, 0, base_shape[i]);
         CLIP(start, 0, base_shape[i]);
-        _shape.push_back((end - start + range.step - 1) / range.step); // ceil: step 7 in 22 :4=ciel(22/7) 0,7,14,21
+        auto s = (end - start + range.step - 1) / range.step;
+        _volume *= s;
+        _shape.push_back(s); // ceil: step 7 in 22 :4=ciel(22/7) 0,7,14,21
         if (range.step != 1)
         {
             _stride[i] *= range.step;
@@ -159,7 +167,7 @@ void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_vie
     }
 }
 
-size_t TensorImpl::get_pos_offset(const Shape &pos)
+size_t TensorImpl::get_pos_offset(const Shape &pos) const
 {
     size_t ret = _base_offset;
     auto r = rank();
