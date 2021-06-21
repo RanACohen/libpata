@@ -38,5 +38,8 @@ void TestCommand::execute()
  void CPUAddCmd::execute()
  {
      //todo: implement me
-     std::cout << "add two tensors here please...\n";
+     if (_inputs[0].is_contiguous() && _inputs[1].is_contiguous() && _outputs[0].is_contiguous())
+     {
+        
+     }
  }

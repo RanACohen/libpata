@@ -3,8 +3,16 @@
 #include "cpu_stream.h"
 #include "tosa_stream_pool.h"
 
+#include "libxsmm.h"
+
 using namespace libtosa;
 using namespace libtosa::impl;
+
+CPUBackend::CPUBackend()
+{
+    libxsmm_init();
+}
+
 
 StreamPtr CPUBackend::createStream() 
 {

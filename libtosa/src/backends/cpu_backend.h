@@ -16,7 +16,7 @@ namespace libtosa {
     namespace impl {
         class CPUBackend: public Backend {
             friend class libtosa::BackendManager;
-            CPUBackend() = default;
+            CPUBackend();
             std::mutex _pool_mutex;
             std::shared_ptr<libtosa::StreamPool> _pool;
 
