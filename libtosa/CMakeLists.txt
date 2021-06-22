@@ -15,7 +15,8 @@ include(ExternalProject)
 find_program(MAKE_EXE NAMES make gmake nmake)
 ExternalProject_Add(
         libxsmm
-        GIT_REPOSITORY git@github.com:hfp/libxsmm.git
+	#        GIT_REPOSITORY git@github.com:hfp/libxsmm.git
+	GIT_REPOSITORY https://github.com/hfp/libxsmm.git
         BUILD_COMMAND ${MAKE_EXE} -j8
         UPDATE_COMMAND ""
 #        SOURCE_DIR ${make_lib_SOURCE_DIR}
