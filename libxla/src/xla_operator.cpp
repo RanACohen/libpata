@@ -34,7 +34,7 @@ void libxla::schedule(const std::shared_ptr<ComputeCmd> &cmd)
         stream->push(out.get_signal_cmd());
     }
     auto end_time = chrono::high_resolution_clock::now();
-    schedule_time_map[cmd->name()] = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
+    //schedule_time_map[cmd->name()] = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
 }
 
 KernelFunction::KernelFunction(const std::string &code)

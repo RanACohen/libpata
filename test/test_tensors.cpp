@@ -136,13 +136,13 @@ TEST(TensorPerformanceTests, TestTimeMeasure) {
 
 TEST(TensorPerformanceTests, TestAdd1000) {
     auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({20, 30}, FLOAT, ws);
+    Tensor t({16, 64}, FLOAT, ws);
     float *ptF = (float*)t.base_addr();
-    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.1;    
+    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.25;
     Tensor s1 = t.subrange(Range(2), Range(0, 10));
     Tensor s2 = t[{Range(2), Range(5, 15)}];
-    ASSERT_EQ(*s1.at<float>(1,1), 3.1f);
-    ASSERT_EQ(*s2.at<float>(1,1), 3.6f);
+    ASSERT_FLOAT_EQ(*s1.at<float>(1,1), 16.25f);
+    ASSERT_FLOAT_EQ(*s2.at<float>(1,1), 17.5f);
     Tensor x;
     EXPECT_EQ(s1.shape(), s2.shape());
     for (unsigned i=0; i<1000; i++)
@@ -152,6 +152,6 @@ TEST(TensorPerformanceTests, TestAdd1000) {
         s1 = x;
     }
     //StreamManager::Inst().wait_for_all();
-    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 3603.13f);
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 17516.25f);
     BackendManager::Inst().backend()->wait_for_all();
 }
