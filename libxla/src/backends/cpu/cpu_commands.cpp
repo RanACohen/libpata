@@ -46,8 +46,7 @@ libxsmm_datatype xla_to_xsmm_dtype(DType dtype)
 }
 
 void CPUAddCmd::execute()
-{
-    //todo: implement me
+{    
     if (_inputs[0].rank() == 2)
     {
         libxsmm_meltw_binary_param binary_param;
@@ -71,7 +70,7 @@ void CPUAddCmd::execute()
 
         XLA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
 
-        libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(shape[0], shape[1], 
+        libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(shape[1], shape[0], 
             &ldi0, &ldi1, &ldo, 
             dt, dt, dt, binary_flags, binary_type);
         XLA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");

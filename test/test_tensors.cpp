@@ -123,12 +123,35 @@ TEST(TensorOperationTests, TestAdd1) {
     BackendManager::Inst().backend()->wait_for_all();
 }
 
-TEST(TensorOperationTests, TestTimeMeasure) {
+
+TEST(TensorPerformanceTests, TestTimeMeasure) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = reluN(t);
     BackendManager::Inst().backend()->wait_for_all();
 
     for (auto& t : schedule_time_map)
-        std::cout << "Operation " << t.first << " took " << t.second.count() << "ms. \n";
+        std::cout << "Operation " << t.first << " took " << t.second.count() << "usec. \n";
+}
+
+TEST(TensorPerformanceTests, TestAdd1000) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor t({20, 30}, FLOAT, ws);
+    float *ptF = (float*)t.base_addr();
+    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.1;    
+    Tensor s1 = t.subrange(Range(2), Range(0, 10));
+    Tensor s2 = t[{Range(2), Range(5, 15)}];
+    ASSERT_EQ(*s1.at<float>(1,1), 3.1f);
+    ASSERT_EQ(*s2.at<float>(1,1), 3.6f);
+    Tensor x;
+    EXPECT_EQ(s1.shape(), s2.shape());
+    for (unsigned i=0; i<1000; i++)
+    {
+        x = s1 + s2;
+        //s2 = s1;
+        s1 = x;
+    }
+    //StreamManager::Inst().wait_for_all();
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 3603.13f);
+    BackendManager::Inst().backend()->wait_for_all();
 }

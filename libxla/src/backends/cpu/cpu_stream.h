@@ -109,6 +109,7 @@ namespace libxla
                             break;
                         auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                         XLA_ASSERT(cpu_cmd && "not a CPU command!");
+                        //std::cout << "Executing cmd... on stream " << id() << "\n";
                         cpu_cmd->execute();
                     }
                     //std::cout << "Stream " << id() << " queue Idle... \n";

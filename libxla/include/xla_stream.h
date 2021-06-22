@@ -17,6 +17,7 @@ namespace libxla {
         std::shared_ptr<Stream> _myself;
         std::condition_variable _cv;
         std::mutex _wait_mutex;
+        std::mutex _idle_mutex;
         bool _idle;
 
     public:
@@ -26,6 +27,7 @@ namespace libxla {
         int id() { return _id;}
         void push(const CommandPtr &cmd)
         {
+            //std::unique_lock<std::mutex> lk(_idle_mutex);
             _idle = false;
             //std::cout << "Stream " << id() << " BUSY \n";
             _myself = shared_from_this();
@@ -33,6 +35,7 @@ namespace libxla {
         }
         void back_to_idle()
         { 
+            //std::unique_lock<std::mutex> lk(_idle_mutex);
             //std::cout << "Stream " << id() << " IDLE \n";
             _myself.reset(); 
             _idle = true;

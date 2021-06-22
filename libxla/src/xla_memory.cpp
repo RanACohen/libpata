@@ -36,3 +36,8 @@ MemoryBlock::MemoryBlock(size_t size, const WorkspacePtr &workspace) {
     _size = size;
     _ptr = workspace->allocate(size);
 }
+
+MemoryBlock::~MemoryBlock()
+{
+    _workspace->free(_ptr, _size);
+}

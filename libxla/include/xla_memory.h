@@ -39,6 +39,7 @@ namespace libxla {
         MemoryBlock(size_t size, const WorkspacePtr &workspace);
 
     public:
+        ~MemoryBlock();
         const WorkspacePtr &workspace() const { return _workspace; }
         void *ptr() const { return _ptr;}
 

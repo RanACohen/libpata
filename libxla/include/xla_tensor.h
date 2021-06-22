@@ -20,6 +20,7 @@ namespace libxla {
         explicit Tensor(const ImplPtr &impl):_impl(impl){}
 
     public:
+        explicit Tensor() = default;
         explicit Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace):
             _impl(std::make_shared<TensorImpl>(shape, dtype, workspace)) {}
         explicit Tensor(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace):

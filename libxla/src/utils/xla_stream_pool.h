@@ -49,13 +49,16 @@ namespace libxla {
         inline StreamPtr createStream()
         {
             std::lock_guard<std::mutex> guard(_pool_mutex);
+            Stream *ret_str = nullptr;
             if (is_empty())
             {
-                auto new_stream = _stream_obj_creator(_all.size());
-                _ready_pool.push_back(new_stream);
-                _all.push_back(new_stream);
+                ret_str = _stream_obj_creator(_all.size());                
+                _all.push_back(ret_str);
+            } else {
+                ret_str = _ready_pool.back();
+                _ready_pool.pop_back();
             }
-            return StreamPtr(getStream(), 
+            return StreamPtr(ret_str, 
                     [=](Stream* stream) {  returnStream(stream);});
         }
         inline void wait_for_all()
@@ -66,15 +69,11 @@ namespace libxla {
     private:
         inline void returnStream(Stream *str)
         {
-            //std::cout << "returning stream" << str->_id << std::endl;
+            std::lock_guard<std::mutex> guard(_pool_mutex);
+            //std::cout << "returning stream #" << str->id() << std::endl;
             _ready_pool.push_back(str);
         }
-        inline Stream *getStream()
-        {
-            auto ret = _ready_pool.back();
-            _ready_pool.pop_back();
-            return ret;
-        }
+        
         inline bool    is_empty() { return _ready_pool.empty();}
     };
 }
