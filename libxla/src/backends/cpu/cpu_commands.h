@@ -2,13 +2,13 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_CPU_COMMANDS_H
-#define LIBTOSA_TOSA_CPU_COMMANDS_H
+#ifndef LIBXLA_XLA_CPU_COMMANDS_H
+#define LIBXLA_XLA_CPU_COMMANDS_H
 
-#include "tosa_commands.h"
-#include "tosa_operator.h"
+#include "xla_commands.h"
+#include "xla_operator.h"
 
-namespace libtosa
+namespace libxla
 {
     namespace impl
     {
@@ -69,7 +69,7 @@ namespace libtosa
         {
             public:
             CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                ComputeCmd("tosa.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                ComputeCmd("xla.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
                 {}
             virtual void execute();
         };
@@ -77,4 +77,4 @@ namespace libtosa
     }
 }
 
-#endif // LIBTOSA_TOSA_CPU_COMMANDS_H
+#endif // LIBXLA_XLA_CPU_COMMANDS_H

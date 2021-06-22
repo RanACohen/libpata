@@ -2,12 +2,13 @@
 // Created by rcohen on 15/6/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_COMMAND_H
-#define LIBTOSA_TOSA_COMMAND_H
+#ifndef LIBXLA_XLA_COMMAND_H
+#define LIBXLA_XLA_COMMAND_H
 #include <memory>
 #include <mutex>
 #include <condition_variable>
-namespace libtosa {    
+
+namespace libxla {    
     class Command: public std::enable_shared_from_this<Command> {
         public:
         virtual ~Command() = default;
@@ -39,4 +40,4 @@ namespace libtosa {
     };
 };
 
-#endif //LIBTOSA_TOSA_COMMAND_H
+#endif //LIBXLA_XLA_COMMAND_H

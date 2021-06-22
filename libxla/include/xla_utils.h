@@ -4,12 +4,12 @@
 // this file contains several utilities for data manipulation (boilerplate code)
 #pragma once
 
-#ifndef LIBTOSA_TOSA_UTILS_H
-#define LIBTOSA_TOSA_UTILS_H
+#ifndef LIBXLA_XLA_UTILS_H
+#define LIBXLA_XLA_UTILS_H
 #include <list>
 #include <memory>
 
-namespace libtosa
+namespace libxla
 {
     static inline size_t __adder(size_t v) { return v; }
     template<typename T, typename... Args>
@@ -36,6 +36,6 @@ namespace libtosa
         }
     };
 
-} // namespace libtosa
+} // namespace libxla
 
 #endif

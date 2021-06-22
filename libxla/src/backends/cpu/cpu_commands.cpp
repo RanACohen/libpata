@@ -1,8 +1,8 @@
 #include <unistd.h>
 #include "cpu_commands.h"
 
-using namespace libtosa;
-using namespace libtosa::impl;
+using namespace libxla;
+using namespace libxla::impl;
 
 void CPUWait::execute()
 {

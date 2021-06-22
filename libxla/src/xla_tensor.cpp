@@ -1,14 +1,14 @@
 #include <iostream>
 
-#include "tosa_tensor.h"
-#include "tosa_errors.h"
-#include "tosa_commands.h"
-#include "tosa_operator.h"
-#include "tosa_backend.h"
+#include "xla_tensor.h"
+#include "xla_errors.h"
+#include "xla_commands.h"
+#include "xla_operator.h"
+#include "xla_backend.h"
 
-using namespace libtosa;
+using namespace libxla;
 
-int libtosa::dtype_byte_size(DType dtype)
+int libxla::dtype_byte_size(DType dtype)
 {
     //                            0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16
     static int DTypeByteSize[] = {0, 4, 1, 1, 2, 2, 4, 8, 1, 1, 2, 8, 4, 8, 8, 16, 2};
@@ -136,7 +136,7 @@ CommandPtr TensorImpl::getWaitIfNotReady()
 
 void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
 {
-    TOSA_ASSERT(!_signal); // if this tensor is not ready we cannot overide it
+    XLA_ASSERT(!_signal); // if this tensor is not ready we cannot overide it
     _signal = signal;
 
     if (!from_peer)
@@ -173,7 +173,7 @@ size_t TensorImpl::get_pos_offset(const Shape &pos) const
     auto r = rank();
     if (pos.size() != r)
     {
-        throw TosaThrow(TosaRuntimeException() << "Position not in the same rank as tensor.");
+        throw XlaThrow(XlaRuntimeException() << "Position not in the same rank as tensor.");
     }
     for (unsigned i = 0; i < r; i++)
     {
@@ -268,8 +268,8 @@ void TensorImpl::register_as_view(const TensorPtr &view)
 bool TensorImpl::is_view_overlap(const std::shared_ptr<TensorImpl> &sibling_view)
 {
     auto nrank = rank();
-    TOSA_ASSERT(nrank == sibling_view->rank());
-    TOSA_ASSERT(_view_base == sibling_view->_view_base);
+    XLA_ASSERT(nrank == sibling_view->rank());
+    XLA_ASSERT(_view_base == sibling_view->_view_base);
 
     TensorSpace base(_view_base.get());
     TensorSpace lhs(this);
@@ -287,7 +287,7 @@ bool TensorImpl::is_view_overlap(const std::shared_ptr<TensorImpl> &sibling_view
         for (unsigned i = 0; i < nrank; i++)
         {
             size_t f = _stride[i] / base.stride[i];
-            TOSA_ASSERT(f * base.stride[i] == _stride[i]); // make sure whole integer
+            XLA_ASSERT(f * base.stride[i] == _stride[i]); // make sure whole integer
             dilation.push_back(f);
         }
         return lhs.is_overlap(rhs, dilation);
@@ -298,8 +298,8 @@ bool TensorImpl::is_view_overlap(const std::shared_ptr<TensorImpl> &sibling_view
 // elementwise add
 Tensor Tensor::operator+(const Tensor &rhs) const
 {
-    TOSA_ASSERT(shape() == rhs.shape()); // todo : support broadcasting later
-    TOSA_ASSERT(dtype() == rhs.dtype()); // no implicit casting
+    XLA_ASSERT(shape() == rhs.shape()); // todo : support broadcasting later
+    XLA_ASSERT(dtype() == rhs.dtype()); // no implicit casting
 
     AttrList attributes;
     auto out_tensor = Tensor(shape(), dtype(), workspace());

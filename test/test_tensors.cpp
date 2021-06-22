@@ -2,12 +2,12 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "tosa_utils.h"
-#include "tosa_tensor.h"
-#include "tosa_operator.h"
-#include "tosa_backend.h"
+#include "xla_utils.h"
+#include "xla_tensor.h"
+#include "xla_operator.h"
+#include "xla_backend.h"
 
-using namespace libtosa;
+using namespace libxla;
 // Demonstrate some basic assertions.
 TEST(TensorTests, StrideTest) {
     auto ws = std::make_shared<Workspace>(1000000);

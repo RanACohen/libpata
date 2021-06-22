@@ -1,15 +1,16 @@
-#include "tosa_tensor.h"
-#include "tosa_errors.h"
-#include "tosa_operator.h"
-#include "tosa_stream.h"
-#include "tosa_backend.h"
+#include "xla_tensor.h"
+#include "xla_errors.h"
+#include "xla_operator.h"
+#include "xla_stream.h"
+#include "xla_backend.h"
 
 
-using namespace libtosa;
+using namespace libxla;
 
 
-void libtosa::schedule(const std::shared_ptr<ComputeCmd> &cmd)
+void libxla::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
+    // basic measurement - how much time between two operations schedule/schedule. 
     auto manager = BackendManager::Inst();
     auto stream = manager.backend()->createStream();
     for (auto in : cmd->inputs())
@@ -44,25 +45,25 @@ KernelFunction::KernelFunction(const char *code)
 
 }
 
-void libtosa::parallel_for(const Range &index, const KernelFunction &func)
+void libxla::parallel_for(const Range &index, const KernelFunction &func)
 {
 }
 
-Tensor libtosa::reluN(const Tensor &in)
+Tensor libxla::reluN(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
 
-    auto cmd = BackendManager::Inst().backend()->createComputeCmd("tosa.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("xla.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
     schedule(cmd);
 
     return out;
 }
 
-Tensor libtosa::abs(const Tensor &in)
+Tensor libxla::abs(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
     
-    auto cmd = BackendManager::Inst().backend()->createComputeCmd("tosa.abs", {in}, {out}, {});
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("xla.abs", {in}, {out}, {});
     schedule(cmd);
     return out;
 }

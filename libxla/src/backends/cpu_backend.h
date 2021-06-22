@@ -2,23 +2,23 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_CPU_BACKEND_H
-#define LIBTOSA_TOSA_CPU_BACKEND_H
+#ifndef LIBXLA_XLA_CPU_BACKEND_H
+#define LIBXLA_XLA_CPU_BACKEND_H
 #include <string>
 #include <memory>
 #include <condition_variable>
 
-#include "tosa_backend.h"
-#include "tosa_stream.h"
-#include "tosa_stream_pool.h"
+#include "xla_backend.h"
+#include "xla_stream.h"
+#include "xla_stream_pool.h"
 
-namespace libtosa {
+namespace libxla {
     namespace impl {
         class CPUBackend: public Backend {
-            friend class libtosa::BackendManager;
+            friend class libxla::BackendManager;
             CPUBackend();
             std::mutex _pool_mutex;
-            std::shared_ptr<libtosa::StreamPool> _pool;
+            std::shared_ptr<libxla::StreamPool> _pool;
 
             public:
             virtual StreamPtr createStream();
@@ -32,4 +32,4 @@ namespace libtosa {
     }
 }
 
-#endif //LIBTOSA_TOSA_CPU_BACKEND_H
+#endif //LIBXLA_XLA_CPU_BACKEND_H

@@ -2,17 +2,17 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_BACKEND_H
-#define LIBTOSA_TOSA_BACKEND_H
+#ifndef LIBXLA_XLA_BACKEND_H
+#define LIBXLA_XLA_BACKEND_H
 #include <string>
 #include <memory>
 #include <condition_variable>
 
-#include "tosa_stream.h"
-#include "tosa_commands.h"
-#include "tosa_operator.h"
+#include "xla_stream.h"
+#include "xla_commands.h"
+#include "xla_operator.h"
 
-namespace libtosa {
+namespace libxla {
     class Backend {
         public:
         virtual ~Backend() = default;
@@ -48,4 +48,4 @@ namespace libtosa {
 
 }
 
-#endif // LIBTOSA_TOSA_BACKEND_H
+#endif // LIBXLA_XLA_BACKEND_H

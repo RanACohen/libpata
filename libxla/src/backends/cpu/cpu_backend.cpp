@@ -1,18 +1,17 @@
 #include "cpu_backend.h"
 #include "cpu_commands.h"
 #include "cpu_stream.h"
-#include "tosa_stream_pool.h"
+#include "xla_stream_pool.h"
 
 #include "libxsmm.h"
 
-using namespace libtosa;
-using namespace libtosa::impl;
+using namespace libxla;
+using namespace libxla::impl;
 
 CPUBackend::CPUBackend()
 {
     libxsmm_init();
 }
-
 
 StreamPtr CPUBackend::createStream() 
 {
@@ -20,7 +19,7 @@ StreamPtr CPUBackend::createStream()
     {
         std::lock_guard<std::mutex> guard(_pool_mutex);
         if (!_pool)
-            _pool = std::make_shared<libtosa::StreamPool>(5, [](int i)-> Stream* {return new CPUStream(i); });
+            _pool = std::make_shared<libxla::StreamPool>(5, [](int i)-> Stream* {return new CPUStream(i); });
     }
             
     return _pool->createStream();

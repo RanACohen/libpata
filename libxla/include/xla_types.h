@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#ifndef LIBTOSA_TOSA_TYPES_H
-#define LIBTOSA_TOSA_TYPES_H
+#ifndef LIBXLA_XLA_TYPES_H
+#define LIBXLA_XLA_TYPES_H
 #include <vector>
 
-namespace libtosa {
+namespace libxla {
     typedef long RelativeSize;
 
     struct Range {
@@ -55,4 +55,4 @@ namespace libtosa {
 
 }
 
-#endif //LIBTOSA_TOSA_TYPES_H
+#endif //LIBXLA_XLA_TYPES_H

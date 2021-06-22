@@ -2,20 +2,20 @@
 // Created by galstar on 31/5/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_OPERATOR_H
-#define LIBTOSA_TOSA_OPERATOR_H
+#ifndef LIBXLA_XLA_OPERATOR_H
+#define LIBXLA_XLA_OPERATOR_H
 #include <memory>
 #include <queue>
 #include <vector>
 #include <string>
 #include <iostream>
 
-#include "tosa_tensor.h"
-#include "tosa_stream.h"
+#include "xla_tensor.h"
+#include "xla_stream.h"
 
 using namespace std;
 
-namespace libtosa {    
+namespace libxla {    
     class Attr {
         public:
             explicit Attr(DType dtype, std::string name) : _dtype(dtype), _name(name) {}
@@ -64,16 +64,9 @@ namespace libtosa {
 
     
     void parallel_for(const Range &index, const KernelFunction &func);
-    
-    //===----------------------------------------------------------------------===//
-    //
-    // The functions below define the operation set for the TOSA dialect as defined in
-    // the TOSA specfication (https://developer.mlplatform.org/w/tosa/).
-    // Each will create tensors and submit for scheduling into execution streams.
-    //
-    //===----------------------------------------------------------------------===//
+
     Tensor reluN(const Tensor& in);
     Tensor abs(const Tensor& in);
 };
 
-#endif //LIBTOSA_TOSA_OPERATOR_H
+#endif //LIBXLA_XLA_OPERATOR_H

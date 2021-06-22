@@ -1,7 +1,7 @@
-#include "tosa_backend.h"
+#include "xla_backend.h"
 #include "backends/cpu_backend.h"
 
-using namespace libtosa;
+using namespace libxla;
 
 BackendManager &BackendManager::Inst()
 {

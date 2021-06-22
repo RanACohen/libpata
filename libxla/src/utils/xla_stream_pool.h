@@ -2,20 +2,17 @@
 // Created by galstar on 21/06/2021
 //
 #pragma once
-#ifndef LIBTOSA_STREAM_POOL_HPP
-#define LIBTOSA_STREAM_POOL_HPP
+#ifndef LIBXLA_STREAM_POOL_HPP
+#define LIBXLA_STREAM_POOL_HPP
 
 #include <iostream>
 #include <mutex>
 #include <vector>
 #include <thread>
-#include "tosa_stream.h"
-//#include "tosa_tensor.h"
-//#include "tosa_errors.h"
-//#include "tosa_operator.h"
-#include "tosa_backend.h"
+#include "xla_stream.h"
+#include "xla_backend.h"
 
-namespace libtosa {  
+namespace libxla {  
     class StreamPool
     {
         std::mutex _pool_mutex;
@@ -82,4 +79,4 @@ namespace libtosa {
     };
 }
 
-#endif //LIBTOSA_STREAM_POOL_HPP
+#endif //LIBXLA_STREAM_POOL_HPP

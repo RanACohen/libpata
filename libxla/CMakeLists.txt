@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.19)
-project(libtosa)
+project(libxla)
 
 set(CMAKE_CXX_STANDARD 14)
 file(GLOB SRC_FILES src/*.c src/*.cpp)
@@ -29,7 +29,7 @@ ExternalProject_Add(
 ExternalProject_Get_property(libxsmm BINARY_DIR SOURCE_DIR)
 include_directories(${SOURCE_DIR}/include)
 
-add_library(tosa SHARED ${SRC_FILES} ${SRC_BACKENDS_FILES} ${SRC_CPU_BACKENDS_FILES} ${INC_FILES} include/tosa_errors.h)
-target_link_libraries(tosa ${BINARY_DIR}/lib/libxsmm.a ${BINARY_DIR}/lib/libxsmmext.a ${BINARY_DIR}/lib/libxsmmnoblas.a dl)
-add_dependencies(tosa libxsmm)
+add_library(xla SHARED ${SRC_FILES} ${SRC_BACKENDS_FILES} ${SRC_CPU_BACKENDS_FILES} ${INC_FILES} include/xla_errors.h)
+target_link_libraries(xla ${BINARY_DIR}/lib/libxsmm.a ${BINARY_DIR}/lib/libxsmmext.a ${BINARY_DIR}/lib/libxsmmnoblas.a dl)
+add_dependencies(xla libxsmm)
 

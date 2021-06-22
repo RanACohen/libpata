@@ -1,12 +1,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-#include "tosa_tensor.h"
-#include "tosa_operator.h"
-#include "tosa_stream.h"
-#include "tosa_backend.h"
+#include "xla_tensor.h"
+#include "xla_operator.h"
+#include "xla_stream.h"
+#include "xla_backend.h"
 
-using namespace libtosa;
+using namespace libxla;
 // Demonstrate some basic assertions.
 TEST(ParallelTests, BasicTest) {
     auto ws = std::make_shared<Workspace>(1000000);

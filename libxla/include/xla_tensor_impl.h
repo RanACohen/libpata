@@ -4,18 +4,18 @@
 // this file contains the tensor object definition, including tensor views
 #pragma once
 
-#ifndef LIBTOSA_TOSA_TENSOR_IMPL_H
-#define LIBTOSA_TOSA_TENSOR_IMPL_H
+#ifndef LIBXLA_XLA_TENSOR_IMPL_H
+#define LIBXLA_XLA_TENSOR_IMPL_H
 #include <list>
 #include <memory>
 
-#include "tosa_types.h"
-#include "tosa_memory.h"
-#include "tosa_errors.h"
-#include "tosa_utils.h"
-#include "tosa_stream.h"
+#include "xla_types.h"
+#include "xla_memory.h"
+#include "xla_errors.h"
+#include "xla_utils.h"
+#include "xla_stream.h"
 
-namespace libtosa {    
+namespace libxla {    
     /**
      * TensorImpl is an Immutable object that describes a tensor or a sub view of another tensor
      * Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
@@ -93,4 +93,4 @@ namespace libtosa {
         }
     };
 }
-#endif //LIBTOSA_TOSA_TENSOR_H
+#endif //LIBXLA_XLA_TENSOR_H

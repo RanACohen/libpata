@@ -2,15 +2,15 @@
 // Created by rcohen on 08/06/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_STREAM_HPP
-#define LIBTOSA_TOSA_STREAM_HPP
+#ifndef LIBXLA_XLA_STREAM_HPP
+#define LIBXLA_XLA_STREAM_HPP
 #include <memory>
 #include <queue>
 #include <iostream>
 
-#include "tosa_commands.h"
+#include "xla_commands.h"
 
-namespace libtosa {  
+namespace libxla {  
     
     class Stream: public std::enable_shared_from_this<Stream> {
         int _id;
@@ -53,4 +53,4 @@ namespace libtosa {
     typedef Stream*(*StreamCreatorFunc)(int);
 };
 
-#endif //LIBTOSA_TOSA_STREAM_HPP
+#endif //LIBXLA_XLA_STREAM_HPP

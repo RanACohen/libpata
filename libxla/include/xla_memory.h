@@ -2,12 +2,12 @@
 // Created by rancohen on 24/5/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_MEMORY_H
-#define LIBTOSA_TOSA_MEMORY_H
+#ifndef LIBXLA_XLA_MEMORY_H
+#define LIBXLA_XLA_MEMORY_H
 #include <memory>
 #include <mutex>
 
-namespace libtosa {
+namespace libxla {
     enum MemoryBank {
         CPU = 0, // CPU shared place
         DEVICE =1  // Device non-shared (copyable via DMA to CPU shared)
@@ -52,4 +52,4 @@ namespace libtosa {
 
 }
 
-#endif //LIBTOSA_TOSA_MEMORY_H
+#endif //LIBXLA_XLA_MEMORY_H

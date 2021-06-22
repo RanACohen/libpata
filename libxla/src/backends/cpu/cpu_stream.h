@@ -2,13 +2,13 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBTOSA_TOSA_CPU_STREAM_H
-#define LIBTOSA_TOSA_CPU_STREAM_H
+#ifndef LIBXLA_XLA_CPU_STREAM_H
+#define LIBXLA_XLA_CPU_STREAM_H
 #include <thread>
 
-#include "tosa_stream.h"
+#include "xla_stream.h"
 
-namespace libtosa
+namespace libxla
 {
     namespace impl
     {
@@ -35,7 +35,7 @@ namespace libtosa
             void push(const T &item)
             {
                 auto next_put = (_put + 1) % _size;
-                TOSA_ASSERT(next_put != _get); // queue if full, nothing to do, bail out....
+                XLA_ASSERT(next_put != _get); // queue if full, nothing to do, bail out....
                 _cyclic_buffer[_put] = item;
                 _put = next_put;
             }
@@ -82,7 +82,7 @@ namespace libtosa
                 auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                 if (!cpu_cmd)
                 {
-                    TOSA_ASSERT(cpu_cmd && "pushing not a CPU command!");
+                    XLA_ASSERT(cpu_cmd && "pushing not a CPU command!");
                 }
                 _cmd_queue.push(cmd);
                 _cv.notify_one();
@@ -108,7 +108,7 @@ namespace libtosa
                         if (!_cmd_queue.pop(cmd))
                             break;
                         auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
-                        TOSA_ASSERT(cpu_cmd && "not a CPU command!");
+                        XLA_ASSERT(cpu_cmd && "not a CPU command!");
                         cpu_cmd->execute();
                     }
                     //std::cout << "Stream " << id() << " queue Idle... \n";
@@ -121,4 +121,4 @@ namespace libtosa
     }
 }
 
-#endif // LIBTOSA_TOSA_CPU_STREAM_H
+#endif // LIBXLA_XLA_CPU_STREAM_H

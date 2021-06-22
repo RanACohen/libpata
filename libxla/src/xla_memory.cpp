@@ -1,9 +1,9 @@
 //
 // Created by rancohen on 24/5/2021.
 //
-#include "tosa_memory.h"
+#include "xla_memory.h"
 
-using namespace libtosa;
+using namespace libxla;
 
 Workspace::Workspace(size_t size_in_bytes, MemoryBank bank) {
     _left_space = size_in_bytes;

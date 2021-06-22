@@ -4,14 +4,14 @@
 // this file contains the tensor object definition, including tensor views
 #pragma once
 
-#ifndef LIBTOSA_TOSA_TENSOR_H
-#define LIBTOSA_TOSA_TENSOR_H
+#ifndef LIBXLA_XLA_TENSOR_H
+#define LIBXLA_XLA_TENSOR_H
 #include <list>
 #include <memory>
 
-#include "tosa_tensor_impl.h"
+#include "xla_tensor_impl.h"
 
-namespace libtosa {         
+namespace libxla {         
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
@@ -61,4 +61,4 @@ namespace libtosa {
         Tensor operator+(const Tensor &rhs) const;
     };
 }
-#endif //LIBTOSA_TOSA_TENSOR_H
+#endif //LIBXLA_XLA_TENSOR_H
