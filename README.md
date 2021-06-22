@@ -1,6 +1,6 @@
-# LibXla
+# LibXLA
 
-##Overview
+## Overview
 This is an PoC experiment to create a low-level tensor programing model with an abstruction of Tensor Operator Set. 
 
 ## Experimentation Questions
@@ -14,7 +14,7 @@ Experimentation is around:
 - cmake => 3.19
 - C++ 14 
 - gtest (will be cloned during build)
-- libxsmm (will be cloned during build from https://github.com/hfp/libxsmm.git)
+- [libxsmm](https://github.com/hfp/libxsmm.git)(will be cloned during build from )
 
 Share & Enjoy :smiley:
 
