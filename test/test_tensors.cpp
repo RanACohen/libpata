@@ -8,6 +8,8 @@
 #include "xla_backend.h"
 
 using namespace libxla;
+ScheduleTimeMeasurement libxla::schedule_time_map;
+
 // Demonstrate some basic assertions.
 TEST(TensorTests, StrideTest) {
     auto ws = std::make_shared<Workspace>(1000000);
@@ -119,4 +121,14 @@ TEST(TensorOperationTests, TestAdd1) {
     //StreamManager::Inst().wait_for_all();
     ASSERT_EQ(*x.at<float>(1,1), 6.7f);
     BackendManager::Inst().backend()->wait_for_all();
+}
+
+TEST(TensorOperationTests, TestTimeMeasure) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor t({10, 20, 30}, FLOAT, ws);
+    auto x = reluN(t);
+    BackendManager::Inst().backend()->wait_for_all();
+
+    for (auto& t : schedule_time_map)
+        std::cout << "Operation " << t.first << " took " << t.second.count() << "ms. \n";
 }

@@ -9,13 +9,18 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <map>
+#include <chrono>
 
 #include "xla_tensor.h"
 #include "xla_stream.h"
 
 using namespace std;
 
-namespace libxla {    
+namespace libxla {   
+    typedef std::map<std::string, std::chrono::microseconds> ScheduleTimeMeasurement;
+    extern ScheduleTimeMeasurement schedule_time_map;
+ 
     class Attr {
         public:
             explicit Attr(DType dtype, std::string name) : _dtype(dtype), _name(name) {}
@@ -61,7 +66,6 @@ namespace libxla {
         KernelFunction(const std::string &code);
         KernelFunction(const char *code);
     };
-
     
     void parallel_for(const Range &index, const KernelFunction &func);
 

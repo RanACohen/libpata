@@ -4,13 +4,12 @@
 #include "xla_stream.h"
 #include "xla_backend.h"
 
-
 using namespace libxla;
-
+ScheduleTimeMeasurement libxla::schedule_time_map = {};
 
 void libxla::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
-    // basic measurement - how much time between two operations schedule/schedule. 
+    auto start_time = chrono::high_resolution_clock::now();
     auto manager = BackendManager::Inst();
     auto stream = manager.backend()->createStream();
     for (auto in : cmd->inputs())
@@ -34,6 +33,8 @@ void libxla::schedule(const std::shared_ptr<ComputeCmd> &cmd)
     {
         stream->push(out.get_signal_cmd());
     }
+    auto end_time = chrono::high_resolution_clock::now();
+    schedule_time_map[cmd->name()] = chrono::duration_cast<chrono::microseconds>(end_time - start_time);
 }
 
 KernelFunction::KernelFunction(const std::string &code)
