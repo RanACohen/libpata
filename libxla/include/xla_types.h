@@ -37,7 +37,7 @@ namespace libxla {
         BOOL = 9,    // bool
         // IEEE754 half-precision floating-point format (16 bits wide).
         // This format has 1 sign bit, 5 exponent bits, and 10 mantissa bits.
-        FLOAT16 = 10,
+        FLOAT16 = 10, FP16 = FLOAT16,
         DOUBLE = 11, FLOAT64 = DOUBLE, F64 = DOUBLE,
         UINT32 = 12,
         UINT64 = 13,

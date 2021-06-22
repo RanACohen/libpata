@@ -40,6 +40,7 @@ namespace libxla {
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _stride; }
         inline const Shape &start_pos() const { return _start_pos; }
+        inline size_t volume() const { return _volume; }
         inline bool is_contiguous() const {
             return _stride[0]*_shape[0] == _volume;
         }
@@ -58,10 +59,14 @@ namespace libxla {
         CommandPtr getWaitIfNotReady();
         void mark_not_ready();
         void sync();
+
+        inline void *base_addr() const {
+            return (char*)(_memory->ptr())+ _element_size*(_base_offset);
+        }
         
         template<typename... Args>
         inline void *get(Args... p) {
-            int i=sizeof...(p)-1;            
+            int i=sizeof...(p)-1;
             size_t offset=__adder( _stride[i--]*p...); // pack goes in reverse...
             sync();
             return (char*)(_memory->ptr())+ _element_size*(_base_offset+offset);

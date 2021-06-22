@@ -28,8 +28,8 @@ ExternalProject_Add(
 
 ExternalProject_Get_property(libxsmm BINARY_DIR SOURCE_DIR)
 include_directories(${SOURCE_DIR}/include)
+link_directories(${BINARY_DIR}/lib/)
 
-add_library(xla SHARED ${SRC_FILES} ${SRC_BACKENDS_FILES} ${SRC_CPU_BACKENDS_FILES} ${INC_FILES} include/xla_errors.h)
-target_link_libraries(xla ${BINARY_DIR}/lib/libxsmm.a ${BINARY_DIR}/lib/libxsmmext.a ${BINARY_DIR}/lib/libxsmmnoblas.a dl)
+add_library(xla SHARED ${SRC_FILES} ${SRC_BACKENDS_FILES} ${SRC_CPU_BACKENDS_FILES} ${INC_FILES})
 add_dependencies(xla libxsmm)
-
+target_link_libraries(xla ${BINARY_DIR}/lib/libxsmm.a ${BINARY_DIR}/lib/libxsmmext.a ${BINARY_DIR}/lib/libxsmmnoblas.a dl)

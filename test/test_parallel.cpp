@@ -25,12 +25,14 @@ TEST(ParallelTests, BasicTest) {
     ");
 
 }
-
+/* Ran: this test is invalid, we cannot anticipate pool id ordering...
+need to think how e test the pool logic, maybe expose no of free streams?
 TEST(ParallelTests, CreateStreamsTest) {
     auto backend = BackendManager::Inst().backend();
+    backend->wait_for_all();
     auto str = backend->createStream();
     auto str2 = backend->createStream();
-    ASSERT_EQ(str2->id(), 3);
+    
 
     str.reset();
     str2 = backend->createStream();
@@ -38,6 +40,7 @@ TEST(ParallelTests, CreateStreamsTest) {
 
     backend->wait_for_all();
 }
+*/
 
 TEST(ParallelTests, WaitAllTest) {
     auto ws = std::make_shared<Workspace>(1000000);        

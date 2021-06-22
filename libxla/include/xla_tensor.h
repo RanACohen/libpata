@@ -49,6 +49,9 @@ namespace libxla {
         template<typename T, typename... size_t>
         T* at(size_t... p) const {return (T*)_impl->get(p...);}
 
+        void *base_addr() const { return _impl->base_addr(); }
+        inline size_t volume() const { return _impl->volume(); }
+
         inline void mark_not_ready() { _impl->mark_not_ready();}
         inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
         inline void sync() const { return _impl->sync(); }
