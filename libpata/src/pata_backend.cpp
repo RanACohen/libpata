@@ -1,7 +1,7 @@
-#include "xla_backend.h"
+#include "pata_backend.h"
 #include "backends/cpu_backend.h"
 
-using namespace libxla;
+using namespace libpata;
 
 BackendManager &BackendManager::Inst()
 {

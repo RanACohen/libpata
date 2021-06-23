@@ -2,13 +2,13 @@
 #include <gtest/gtest.h>
 #include <memory>
 
-#include "xla_utils.h"
-#include "xla_tensor.h"
-#include "xla_operator.h"
-#include "xla_backend.h"
+#include "pata_utils.h"
+#include "pata_tensor.h"
+#include "pata_operator.h"
+#include "pata_backend.h"
 
-using namespace libxla;
-ScheduleTimeMeasurement libxla::schedule_time_map;
+using namespace libpata;
+ScheduleTimeMeasurement libpata::schedule_time_map;
 
 // Demonstrate some basic assertions.
 TEST(TensorTests, StrideTest) {

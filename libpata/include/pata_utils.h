@@ -4,12 +4,12 @@
 // this file contains several utilities for data manipulation (boilerplate code)
 #pragma once
 
-#ifndef LIBXLA_XLA_UTILS_H
-#define LIBXLA_XLA_UTILS_H
+#ifndef LIBPATA_PATA_UTILS_H
+#define LIBPATA_PATA_UTILS_H
 #include <list>
 #include <memory>
 
-namespace libxla
+namespace libpata
 {
     static inline size_t __adder(size_t v) { return v; }
     template<typename T, typename... Args>
@@ -36,6 +36,6 @@ namespace libxla
         }
     };
 
-} // namespace libxla
+} // namespace libpata
 
 #endif

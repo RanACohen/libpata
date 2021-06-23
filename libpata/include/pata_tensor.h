@@ -4,14 +4,14 @@
 // this file contains the tensor object definition, including tensor views
 #pragma once
 
-#ifndef LIBXLA_XLA_TENSOR_H
-#define LIBXLA_XLA_TENSOR_H
+#ifndef LIBPATA_PATA_TENSOR_H
+#define LIBPATA_PATA_TENSOR_H
 #include <list>
 #include <memory>
 
-#include "xla_tensor_impl.h"
+#include "pata_tensor_impl.h"
 
-namespace libxla {         
+namespace libpata {         
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
     class Tensor
     {
@@ -65,4 +65,4 @@ namespace libxla {
         Tensor operator+(const Tensor &rhs) const;
     };
 }
-#endif //LIBXLA_XLA_TENSOR_H
+#endif //LIBPATA_PATA_TENSOR_H

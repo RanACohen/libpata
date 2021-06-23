@@ -3,11 +3,11 @@
 //
 #pragma once
 
-#ifndef LIBXLA_XLA_TYPES_H
-#define LIBXLA_XLA_TYPES_H
+#ifndef LIBPATA_PATA_TYPES_H
+#define LIBPATA_PATA_TYPES_H
 #include <vector>
 
-namespace libxla {
+namespace libpata {
     typedef long RelativeSize;
 
     struct Range {
@@ -55,4 +55,4 @@ namespace libxla {
 
 }
 
-#endif //LIBXLA_XLA_TYPES_H
+#endif //LIBPATA_PATA_TYPES_H

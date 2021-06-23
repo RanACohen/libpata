@@ -2,8 +2,8 @@
 // Created by galstar on 31/5/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_OPERATOR_H
-#define LIBXLA_XLA_OPERATOR_H
+#ifndef LIBPATA_PATA_OPERATOR_H
+#define LIBPATA_PATA_OPERATOR_H
 #include <memory>
 #include <queue>
 #include <vector>
@@ -12,12 +12,12 @@
 #include <map>
 #include <chrono>
 
-#include "xla_tensor.h"
-#include "xla_stream.h"
+#include "pata_tensor.h"
+#include "pata_stream.h"
 
 using namespace std;
 
-namespace libxla {   
+namespace libpata {   
     typedef std::vector<std::chrono::microseconds> ScheduleTimeMeasurement;
     extern ScheduleTimeMeasurement schedule_time_map;
  
@@ -73,4 +73,4 @@ namespace libxla {
     Tensor abs(const Tensor& in);
 };
 
-#endif //LIBXLA_XLA_OPERATOR_H
+#endif //LIBPATA_PATA_OPERATOR_H

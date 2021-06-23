@@ -1,10 +1,10 @@
 #include <unistd.h>
-#include "xla_types.h"
+#include "pata_types.h"
 #include "cpu_commands.h"
 #include "libxsmm.h"
 
-using namespace libxla;
-using namespace libxla::impl;
+using namespace libpata;
+using namespace libpata::impl;
 
 void CPUWait::execute()
 {
@@ -36,12 +36,12 @@ void TestCommand::execute()
     *_var = _test_val;
 }
 
-libxsmm_datatype xla_to_xsmm_dtype(DType dtype)
+libxsmm_datatype pata_to_xsmm_dtype(DType dtype)
 {
-     return dtype == libxla::FLOAT ? LIBXSMM_DATATYPE_F32 :
-                              dtype == libxla::BF16 ? LIBXSMM_DATATYPE_BF16 :
-                              dtype == libxla::FP16 ? LIBXSMM_DATATYPE_F16 :
-                              dtype == libxla::INT32 ? LIBXSMM_DATATYPE_I32 :
+     return dtype == libpata::FLOAT ? LIBXSMM_DATATYPE_F32 :
+                              dtype == libpata::BF16 ? LIBXSMM_DATATYPE_BF16 :
+                              dtype == libpata::FP16 ? LIBXSMM_DATATYPE_F16 :
+                              dtype == libpata::INT32 ? LIBXSMM_DATATYPE_I32 :
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
 }
 
@@ -62,18 +62,18 @@ void CPUAddCmd::execute()
         libxsmm_blasint ldi1 = _inputs[1].stride()[0];
         libxsmm_blasint ldo = _outputs[0].stride()[0];
         auto dtype = _inputs[0].dtype();
-        libxsmm_datatype dt = dtype == libxla::FLOAT ? LIBXSMM_DATATYPE_F32 :
-                              dtype == libxla::BF16 ? LIBXSMM_DATATYPE_BF16 :
-                              dtype == libxla::FP16 ? LIBXSMM_DATATYPE_F16 :
-                              dtype == libxla::INT32 ? LIBXSMM_DATATYPE_I32 :
+        libxsmm_datatype dt = dtype == libpata::FLOAT ? LIBXSMM_DATATYPE_F32 :
+                              dtype == libpata::BF16 ? LIBXSMM_DATATYPE_BF16 :
+                              dtype == libpata::FP16 ? LIBXSMM_DATATYPE_F16 :
+                              dtype == libpata::INT32 ? LIBXSMM_DATATYPE_I32 :
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
 
-        XLA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
+        PATA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
 
         libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(shape[1], shape[0], 
             &ldi0, &ldi1, &ldo, 
             dt, dt, dt, binary_flags, binary_type);
-        XLA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");
+        PATA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");
         
         binary_kernel(&binary_param);
         return;
@@ -90,17 +90,17 @@ void CPUAddCmd::execute()
         binary_param.out.primary = _outputs[0].base_addr();
         libxsmm_blasint ldi = _inputs[0].volume();
         auto dtype = _inputs[0].dtype();
-        libxsmm_datatype dt = dtype == libxla::FLOAT ? LIBXSMM_DATATYPE_F32 :
-                              dtype == libxla::BF16 ? LIBXSMM_DATATYPE_BF16 :
-                              dtype == libxla::FP16 ? LIBXSMM_DATATYPE_F16 :
-                              dtype == libxla::INT32 ? LIBXSMM_DATATYPE_I32 :
+        libxsmm_datatype dt = dtype == libpata::FLOAT ? LIBXSMM_DATATYPE_F32 :
+                              dtype == libpata::BF16 ? LIBXSMM_DATATYPE_BF16 :
+                              dtype == libpata::FP16 ? LIBXSMM_DATATYPE_F16 :
+                              dtype == libpata::INT32 ? LIBXSMM_DATATYPE_I32 :
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
 
-        XLA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
+        PATA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
 
         libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(1, _inputs[0].volume(), &ldi, &ldi, &ldi, 
             dt, dt, dt, binary_flags, binary_type);
-        XLA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");
+        PATA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");
         
         binary_kernel(&binary_param);
         return;

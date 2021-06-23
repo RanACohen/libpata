@@ -42,9 +42,9 @@ CMakeCache*
 test/*cmake*
 Makefile
 test/Makefile
-libxla/*cmake
+libpata/*cmake
 build/
 .vscode/
 *cmake
 _deps/
-libxla/libxsmm-prefix/
+libpata/libxsmm-prefix/

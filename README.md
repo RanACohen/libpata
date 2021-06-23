@@ -1,7 +1,7 @@
-# LibXLA
+# LibPATA
 
 ## Overview
-This is an PoC experiment to create a low-level tensor programing model with an abstruction of Tensor Operator Set. 
+LibPATA (Parallel Asynchronous Tensors Abstraction), is a PoC experiment that creates a low-level tensor programing model with an abstruction of Tensor Operator Set. Providing API and Abstraction for programming Tensor operations for parallel execution using an async model underneath.
 
 ## Experimentation Questions
 Experimentation is around:

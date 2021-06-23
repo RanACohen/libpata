@@ -4,18 +4,18 @@
 // this file contains the tensor object definition, including tensor views
 #pragma once
 
-#ifndef LIBXLA_XLA_TENSOR_IMPL_H
-#define LIBXLA_XLA_TENSOR_IMPL_H
+#ifndef LIBPATA_PATA_TENSOR_IMPL_H
+#define LIBPATA_PATA_TENSOR_IMPL_H
 #include <list>
 #include <memory>
 
-#include "xla_types.h"
-#include "xla_memory.h"
-#include "xla_errors.h"
-#include "xla_utils.h"
-#include "xla_stream.h"
+#include "pata_types.h"
+#include "pata_memory.h"
+#include "pata_errors.h"
+#include "pata_utils.h"
+#include "pata_stream.h"
 
-namespace libxla {    
+namespace libpata {    
     /**
      * TensorImpl is an Immutable object that describes a tensor or a sub view of another tensor
      * Shapes (and Strides) are Framework order, meaning the last dim is changing fastest in memory
@@ -98,4 +98,4 @@ namespace libxla {
         }
     };
 }
-#endif //LIBXLA_XLA_TENSOR_H
+#endif //LIBPATA_PATA_TENSOR_H

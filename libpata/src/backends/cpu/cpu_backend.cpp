@@ -1,12 +1,12 @@
 #include "cpu_backend.h"
 #include "cpu_commands.h"
 #include "cpu_stream.h"
-#include "xla_stream_pool.h"
+#include "pata_stream_pool.h"
 
 #include "libxsmm.h"
 
-using namespace libxla;
-using namespace libxla::impl;
+using namespace libpata;
+using namespace libpata::impl;
 
 CPUBackend::CPUBackend()
 {
@@ -19,7 +19,7 @@ StreamPtr CPUBackend::createStream()
     {
         std::lock_guard<std::mutex> guard(_pool_mutex);
         if (!_pool)
-            _pool = std::make_shared<libxla::StreamPool>(5, [](int i)-> Stream* {return new CPUStream(i); });
+            _pool = std::make_shared<libpata::StreamPool>(5, [](int i)-> Stream* {return new CPUStream(i); });
     }
             
     return _pool->createStream();

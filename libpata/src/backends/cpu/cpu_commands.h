@@ -2,13 +2,13 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_CPU_COMMANDS_H
-#define LIBXLA_XLA_CPU_COMMANDS_H
+#ifndef LIBPATA_PATA_CPU_COMMANDS_H
+#define LIBPATA_PATA_CPU_COMMANDS_H
 
-#include "xla_commands.h"
-#include "xla_operator.h"
+#include "pata_commands.h"
+#include "pata_operator.h"
 
-namespace libxla
+namespace libpata
 {
     namespace impl
     {
@@ -69,7 +69,7 @@ namespace libxla
         {
             public:
             CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                ComputeCmd("xla.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                ComputeCmd("pata.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
                 {}
             virtual void execute();
         };
@@ -77,4 +77,4 @@ namespace libxla
     }
 }
 
-#endif // LIBXLA_XLA_CPU_COMMANDS_H
+#endif // LIBPATA_PATA_CPU_COMMANDS_H

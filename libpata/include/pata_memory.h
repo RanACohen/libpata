@@ -2,12 +2,12 @@
 // Created by rancohen on 24/5/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_MEMORY_H
-#define LIBXLA_XLA_MEMORY_H
+#ifndef LIBPATA_PATA_MEMORY_H
+#define LIBPATA_PATA_MEMORY_H
 #include <memory>
 #include <mutex>
 
-namespace libxla {
+namespace libpata {
     enum MemoryBank {
         CPU = 0, // CPU shared place
         DEVICE =1  // Device non-shared (copyable via DMA to CPU shared)
@@ -53,4 +53,4 @@ namespace libxla {
 
 }
 
-#endif //LIBXLA_XLA_MEMORY_H
+#endif //LIBPATA_PATA_MEMORY_H

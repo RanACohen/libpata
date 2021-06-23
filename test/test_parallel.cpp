@@ -1,12 +1,12 @@
 #include <iostream>
 #include <gtest/gtest.h>
 
-#include "xla_tensor.h"
-#include "xla_operator.h"
-#include "xla_stream.h"
-#include "xla_backend.h"
+#include "pata_tensor.h"
+#include "pata_operator.h"
+#include "pata_stream.h"
+#include "pata_backend.h"
 
-using namespace libxla;
+using namespace libpata;
 // Demonstrate some basic assertions.
 TEST(ParallelTests, BasicTest) {
     auto ws = std::make_shared<Workspace>(1000000);

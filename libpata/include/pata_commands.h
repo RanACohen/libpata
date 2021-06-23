@@ -2,13 +2,13 @@
 // Created by rcohen on 15/6/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_COMMAND_H
-#define LIBXLA_XLA_COMMAND_H
+#ifndef LIBPATA_PATA_COMMAND_H
+#define LIBPATA_PATA_COMMAND_H
 #include <memory>
 #include <mutex>
 #include <condition_variable>
 
-namespace libxla {    
+namespace libpata {    
     class Command: public std::enable_shared_from_this<Command> {
         public:
         virtual ~Command() = default;
@@ -40,4 +40,4 @@ namespace libxla {
     };
 };
 
-#endif //LIBXLA_XLA_COMMAND_H
+#endif //LIBPATA_PATA_COMMAND_H

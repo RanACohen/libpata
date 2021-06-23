@@ -1,9 +1,9 @@
 //
 // Created by rancohen on 24/5/2021.
 //
-#include "xla_memory.h"
+#include "pata_memory.h"
 
-using namespace libxla;
+using namespace libpata;
 
 Workspace::Workspace(size_t size_in_bytes, MemoryBank bank) {
     _left_space = size_in_bytes;

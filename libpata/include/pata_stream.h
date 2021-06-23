@@ -2,15 +2,15 @@
 // Created by rcohen on 08/06/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_STREAM_HPP
-#define LIBXLA_XLA_STREAM_HPP
+#ifndef LIBPATA_PATA_STREAM_HPP
+#define LIBPATA_PATA_STREAM_HPP
 #include <memory>
 #include <queue>
 #include <iostream>
 
-#include "xla_commands.h"
+#include "pata_commands.h"
 
-namespace libxla {  
+namespace libpata {  
     
     class Stream: public std::enable_shared_from_this<Stream> {
         int _id;
@@ -56,4 +56,4 @@ namespace libxla {
     typedef Stream*(*StreamCreatorFunc)(int);
 };
 
-#endif //LIBXLA_XLA_STREAM_HPP
+#endif //LIBPATA_PATA_STREAM_HPP

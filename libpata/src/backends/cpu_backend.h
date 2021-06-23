@@ -2,23 +2,23 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_CPU_BACKEND_H
-#define LIBXLA_XLA_CPU_BACKEND_H
+#ifndef LIBPATA_PATA_CPU_BACKEND_H
+#define LIBPATA_PATA_CPU_BACKEND_H
 #include <string>
 #include <memory>
 #include <condition_variable>
 
-#include "xla_backend.h"
-#include "xla_stream.h"
-#include "xla_stream_pool.h"
+#include "pata_backend.h"
+#include "pata_stream.h"
+#include "pata_stream_pool.h"
 
-namespace libxla {
+namespace libpata {
     namespace impl {
         class CPUBackend: public Backend {
-            friend class libxla::BackendManager;
+            friend class libpata::BackendManager;
             CPUBackend();
             std::mutex _pool_mutex;
-            std::shared_ptr<libxla::StreamPool> _pool;
+            std::shared_ptr<libpata::StreamPool> _pool;
 
             public:
             virtual StreamPtr createStream();
@@ -32,4 +32,4 @@ namespace libxla {
     }
 }
 
-#endif //LIBXLA_XLA_CPU_BACKEND_H
+#endif //LIBPATA_PATA_CPU_BACKEND_H

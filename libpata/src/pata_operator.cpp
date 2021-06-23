@@ -1,13 +1,13 @@
-#include "xla_tensor.h"
-#include "xla_errors.h"
-#include "xla_operator.h"
-#include "xla_stream.h"
-#include "xla_backend.h"
+#include "pata_tensor.h"
+#include "pata_errors.h"
+#include "pata_operator.h"
+#include "pata_stream.h"
+#include "pata_backend.h"
 
-using namespace libxla;
-ScheduleTimeMeasurement libxla::schedule_time_map = {};
+using namespace libpata;
+ScheduleTimeMeasurement libpata::schedule_time_map = {};
 
-void libxla::schedule(const std::shared_ptr<ComputeCmd> &cmd)
+void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
     auto manager = BackendManager::Inst();
     auto stream = manager.backend()->createStream();
@@ -45,25 +45,25 @@ KernelFunction::KernelFunction(const char *code)
 
 }
 
-void libxla::parallel_for(const Range &index, const KernelFunction &func)
+void libpata::parallel_for(const Range &index, const KernelFunction &func)
 {
 }
 
-Tensor libxla::reluN(const Tensor &in)
+Tensor libpata::reluN(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
 
-    auto cmd = BackendManager::Inst().backend()->createComputeCmd("xla.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("pata.reluN", {in}, {out}, {Attr(INT64, "max_int"), Attr(FLOAT, "max_fp")});
     schedule(cmd);
 
     return out;
 }
 
-Tensor libxla::abs(const Tensor &in)
+Tensor libpata::abs(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
     
-    auto cmd = BackendManager::Inst().backend()->createComputeCmd("xla.abs", {in}, {out}, {});
+    auto cmd = BackendManager::Inst().backend()->createComputeCmd("pata.abs", {in}, {out}, {});
     schedule(cmd);
     return out;
 }

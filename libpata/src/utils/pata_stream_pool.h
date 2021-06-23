@@ -2,17 +2,17 @@
 // Created by galstar on 21/06/2021
 //
 #pragma once
-#ifndef LIBXLA_STREAM_POOL_HPP
-#define LIBXLA_STREAM_POOL_HPP
+#ifndef LIBPATA_STREAM_POOL_HPP
+#define LIBPATA_STREAM_POOL_HPP
 
 #include <iostream>
 #include <mutex>
 #include <vector>
 #include <thread>
-#include "xla_stream.h"
-#include "xla_backend.h"
+#include "pata_stream.h"
+#include "pata_backend.h"
 
-namespace libxla {  
+namespace libpata {  
     class StreamPool
     {
         std::mutex _pool_mutex;
@@ -78,4 +78,4 @@ namespace libxla {
     };
 }
 
-#endif //LIBXLA_STREAM_POOL_HPP
+#endif //LIBPATA_STREAM_POOL_HPP

@@ -2,13 +2,13 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_CPU_STREAM_H
-#define LIBXLA_XLA_CPU_STREAM_H
+#ifndef LIBPATA_PATA_CPU_STREAM_H
+#define LIBPATA_PATA_CPU_STREAM_H
 #include <thread>
 
-#include "xla_stream.h"
+#include "pata_stream.h"
 
-namespace libxla
+namespace libpata
 {
     namespace impl
     {
@@ -35,7 +35,7 @@ namespace libxla
             void push(const T &item)
             {
                 auto next_put = (_put + 1) % _size;
-                XLA_ASSERT(next_put != _get); // queue if full, nothing to do, bail out....
+                PATA_ASSERT(next_put != _get); // queue if full, nothing to do, bail out....
                 _cyclic_buffer[_put] = item;
                 _put = next_put;
             }
@@ -82,7 +82,7 @@ namespace libxla
                 auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                 if (!cpu_cmd)
                 {
-                    XLA_ASSERT(cpu_cmd && "pushing not a CPU command!");
+                    PATA_ASSERT(cpu_cmd && "pushing not a CPU command!");
                 }
                 _cmd_queue.push(cmd);
                 _cv.notify_one();
@@ -108,7 +108,7 @@ namespace libxla
                         if (!_cmd_queue.pop(cmd))
                             break;
                         auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
-                        XLA_ASSERT(cpu_cmd && "not a CPU command!");
+                        PATA_ASSERT(cpu_cmd && "not a CPU command!");
                         //std::cout << "Executing cmd... on stream " << id() << "\n";
                         cpu_cmd->execute();
                     }
@@ -122,4 +122,4 @@ namespace libxla
     }
 }
 
-#endif // LIBXLA_XLA_CPU_STREAM_H
+#endif // LIBPATA_PATA_CPU_STREAM_H

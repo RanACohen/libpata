@@ -2,17 +2,17 @@
 // Created by rcohen on 20/6/2021.
 //
 #pragma once
-#ifndef LIBXLA_XLA_BACKEND_H
-#define LIBXLA_XLA_BACKEND_H
+#ifndef LIBPATA_PATA_BACKEND_H
+#define LIBPATA_PATA_BACKEND_H
 #include <string>
 #include <memory>
 #include <condition_variable>
 
-#include "xla_stream.h"
-#include "xla_commands.h"
-#include "xla_operator.h"
+#include "pata_stream.h"
+#include "pata_commands.h"
+#include "pata_operator.h"
 
-namespace libxla {
+namespace libpata {
     class Backend {
         public:
         virtual ~Backend() = default;
@@ -48,4 +48,4 @@ namespace libxla {
 
 }
 
-#endif // LIBXLA_XLA_BACKEND_H
+#endif // LIBPATA_PATA_BACKEND_H
