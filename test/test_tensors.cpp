@@ -131,7 +131,7 @@ TEST(TensorPerformanceTests, TestTimeMeasure) {
     BackendManager::Inst().backend()->wait_for_all();
 
     for (auto& t : schedule_time_map)
-        std::cout << "Operation " << t.first << " took " << t.second.count() << "usec. \n";
+        std::cout << "Operation took " << t.count() << "usec. \n";
 }
 
 TEST(TensorPerformanceTests, TestAdd1000) {

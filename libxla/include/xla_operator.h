@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace libxla {   
-    typedef std::map<std::string, std::chrono::microseconds> ScheduleTimeMeasurement;
+    typedef std::vector<std::chrono::microseconds> ScheduleTimeMeasurement;
     extern ScheduleTimeMeasurement schedule_time_map;
  
     class Attr {
