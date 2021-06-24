@@ -9,9 +9,11 @@
 #include <condition_variable>
 
 namespace libpata {    
+    class Stream;
     class Command: public std::enable_shared_from_this<Command> {
         public:
-        virtual ~Command() = default;
+            Stream *sched_in_stream;
+            virtual ~Command() = default;
     };
     typedef std::shared_ptr<Command> CommandPtr;
 

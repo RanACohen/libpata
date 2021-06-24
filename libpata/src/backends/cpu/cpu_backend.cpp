@@ -30,6 +30,11 @@ void CPUBackend::wait_for_all()
     return _pool->wait_for_all();
 }
 
+int CPUBackend::get_number_of_active_streams()
+{
+    return _pool->get_number_of_active_streams();
+}
+
 ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes)
 {
     return std::make_shared<CPUComputeCmd>(op_name, inputs, outputs, attributes);

@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "pata_stream.h"
+#include "pata_debug.h"
 
 namespace libpata
 {
@@ -48,6 +49,8 @@ namespace libpata
                 return true;
             }
 
+            inline bool size() const { return (_put+_size-_get) % _size;}
+
             inline bool empty() const { return _get == _put; }
         };
 
@@ -79,28 +82,31 @@ namespace libpata
         protected:
             void push_impl(const CommandPtr &cmd)
             {
+                //std::unique_lock<std::mutex> lk(_mutex);
                 auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                 if (!cpu_cmd)
                 {
                     PATA_ASSERT(cpu_cmd && "pushing not a CPU command!");
                 }
                 _cmd_queue.push(cmd);
+                //PATA_ASSERT(_cmd_queue.size() < 5);
                 _cv.notify_one();
+                log_dead_lock(id(), cpu_cmd->id(), -1, EventType::CMD_PUSH);
             }
 
         private:
             void execute_queue()
-            {
+            {               
                 std::cout << "Stream " << id() << " running.. \n";
                 while (mRun == true)
-                {
+                {   
                     {
                         std::unique_lock<std::mutex> lk(_mutex); // mutex gets freed when wait is waiting, otherwise it is blocked.
-                        _cv.wait(lk, [=]
-                                 { return !mRun || !_cmd_queue.empty(); });
-                        if (!mRun)
-                            break;
-                    }
+                        _cv.wait(lk, [=]{ return !mRun || !_cmd_queue.empty(); });
+                    }                 
+                    if (!mRun)
+                        break;
+                    
                     //std::cout << "Stream " << id() << " proceesing queue \n";
                     while (!_cmd_queue.empty())
                     {
@@ -110,9 +116,12 @@ namespace libpata
                         auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                         PATA_ASSERT(cpu_cmd && "not a CPU command!");
                         //std::cout << "Executing cmd... on stream " << id() << "\n";
-                        cpu_cmd->execute();
+                        log_dead_lock(id(), cpu_cmd->id(), -1, EventType::CMD_POP);
+                        cpu_cmd->execute(this);                        
+                        cmd->sched_in_stream = nullptr;
                     }
                     //std::cout << "Stream " << id() << " queue Idle... \n";
+                    log_dead_lock(id(), -1, -1, EventType::BACK_TO_IDLE);
                     back_to_idle();
                 }
                 std::cout << "Stream " << id() << " exiting. \n";

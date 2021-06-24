@@ -18,6 +18,7 @@ namespace libpata {
         virtual ~Backend() = default;
 
         virtual StreamPtr createStream() = 0;
+        virtual int get_number_of_active_streams() = 0;
         virtual void wait_for_all() = 0;
 
         virtual std::shared_ptr<Signal> createSignal() = 0;

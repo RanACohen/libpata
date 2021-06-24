@@ -1,6 +1,7 @@
 #include <iostream>
 #include <gtest/gtest.h>
 #include <memory>
+#include <cassert>
 
 #include "pata_utils.h"
 #include "pata_tensor.h"
@@ -134,7 +135,10 @@ TEST(TensorPerformanceTests, TestTimeMeasure) {
         std::cout << "Operation took " << t.count() << "usec. \n";
 }
 
+extern std::atomic<size_t> deadlock_put_index;
+
 TEST(TensorPerformanceTests, TestAdd1000) {
+    deadlock_put_index=0;
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({16, 64}, FLOAT, ws);
     float *ptF = (float*)t.base_addr();
@@ -143,13 +147,17 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     Tensor s2 = t[{Range(2), Range(5, 15)}];
     ASSERT_FLOAT_EQ(*s1.at<float>(1,1), 16.25f);
     ASSERT_FLOAT_EQ(*s2.at<float>(1,1), 17.5f);
-    Tensor x;
+    Tensor x = s1;
     EXPECT_EQ(s1.shape(), s2.shape());
     for (unsigned i=0; i<1000; i++)
     {
-        x = s1 + s2;
-        //s2 = s1;
-        s1 = x;
+        x = x + s2;
+        if (BackendManager::Inst().backend()->get_number_of_active_streams()>300)
+        {
+            extern void dump_dead_lock();
+            dump_dead_lock();
+            assert(false && "Deadlock!");
+        }
     }
     //StreamManager::Inst().wait_for_all();
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 17516.25f);

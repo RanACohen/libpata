@@ -27,16 +27,16 @@ namespace libpata {
         int id() { return _id;}
         void push(const CommandPtr &cmd)
         {
-            //std::unique_lock<std::mutex> lk(_idle_mutex);
+            std::unique_lock<std::mutex> lk(_wait_mutex);
             _idle = false;
+            cmd->sched_in_stream = this;
             //std::cout << "Stream " << id() << " BUSY \n";
             _myself = shared_from_this();
             push_impl(cmd);
         }
         void back_to_idle()
         { 
-            //std::unique_lock<std::mutex> lk(_idle_mutex);
-            //std::cout << "Stream " << id() << " IDLE \n";
+            std::unique_lock<std::mutex> lk(_wait_mutex);
             _myself.reset(); 
             _idle = true;
             _cv.notify_all();

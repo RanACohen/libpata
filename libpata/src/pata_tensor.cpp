@@ -124,8 +124,7 @@ void TensorImpl::mark_not_ready()
 }
 
 CommandPtr TensorImpl::getWaitIfNotReady()
-{
-    //todo: move moutext to wait signal
+{    
     std::lock_guard<std::mutex> guard(_signal_mutex);
     if (_signal && !_signal->is_ready())
     {
@@ -136,7 +135,7 @@ CommandPtr TensorImpl::getWaitIfNotReady()
 
 void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
 {
-    PATA_ASSERT(!_signal); // if this tensor is not ready we cannot overide it
+    PATA_ASSERT(!_signal || _signal->is_ready()); // if this tensor is not ready we cannot overide it
     _signal = signal;
 
     if (!from_peer)

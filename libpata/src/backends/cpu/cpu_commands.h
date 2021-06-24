@@ -15,9 +15,12 @@ namespace libpata
 
         class CPUCommand : virtual public Command
         {
+             size_t _id;
         public:
+            CPUCommand();
+            inline size_t id() const { return _id; }
             virtual ~CPUCommand() = default;
-            virtual void execute() = 0;
+            virtual void execute(Stream *in_stream) = 0;
         };
 
         class CPUComputeCmd : virtual public ComputeCmd, CPUCommand
@@ -29,20 +32,20 @@ namespace libpata
                           const AttrList &attr): ComputeCmd(name, in, out, attr) 
             {}
 
-            virtual void execute()
+            virtual void execute(Stream *in_stream)
             {
-                std::cout << " excuting " << _name << std::endl;
+                std::cout << " excuting " << _name << " in stream id " << in_stream->id() << std::endl;
             }
         };
 
         class CPUSignal : virtual public Signal, CPUCommand
-        {
+        {           
             std::condition_variable _cv;
             std::mutex _mutex;
 
-        public:
-            void wait();
-            virtual void execute();
+        public:            
+            void wait(Stream *wait_in_stream);
+            virtual void execute(Stream *in_stream);
             virtual std::shared_ptr<Wait> getWaitCmd();
         };
 
@@ -50,7 +53,7 @@ namespace libpata
         {
         public:
             CPUWait(const std::shared_ptr<Signal> &wait_on) : Wait(wait_on) {}
-            virtual void execute();
+            virtual void execute(Stream *in_stream);
         };
 
         class TestCommand : virtual public Command, CPUCommand
@@ -62,7 +65,7 @@ namespace libpata
         public:
             TestCommand(int *variable, int test_val, int sleep_ms = 0) : _var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
 
-            virtual void execute();
+            virtual void execute(Stream *in_stream);
         };
 
         class CPUAddCmd: virtual public ComputeCmd, CPUCommand
@@ -71,7 +74,7 @@ namespace libpata
             CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
                 ComputeCmd("pata.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
                 {}
-            virtual void execute();
+            virtual void execute(Stream *in_stream);
         };
 
     }

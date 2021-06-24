@@ -20,6 +20,10 @@ namespace libpata {
         std::vector<Stream *> _ready_pool;
         StreamCreatorFunc _stream_obj_creator;
     public:
+        inline int get_number_of_active_streams() {
+            return _all.size() - _ready_pool.size();
+        }
+        
         inline StreamPool(int init_size, StreamCreatorFunc creator)
         {
             _stream_obj_creator = creator;

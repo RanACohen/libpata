@@ -1,26 +1,46 @@
+#include <atomic>
+
 #include <unistd.h>
 #include "pata_types.h"
 #include "cpu_commands.h"
 #include "libxsmm.h"
+#include "pata_debug.h"
 
 using namespace libpata;
 using namespace libpata::impl;
 
-void CPUWait::execute()
+
+void CPUWait::execute(Stream *in_stream)
 {
     Signal *ps = _wait_on.get();
     auto sig = dynamic_cast<CPUSignal *>(ps);
-    sig->wait();
+    sig->wait(in_stream);
 }
 
-void CPUSignal::wait()
+CPUCommand::CPUCommand()
+{
+    static std::atomic<size_t> gid(0);
+    _id = gid++;
+}
+
+void CPUSignal::wait(Stream *wait_in_stream)
 {
     std::unique_lock<std::mutex> lk(_mutex);
-    _cv.wait(lk, [=]
-             { return is_ready(); });
+        
+    if (is_ready())
+    {
+        log_dead_lock(wait_in_stream->id(), id(), -1, EventType::STREAM_WAIT);
+    } else {
+        log_dead_lock(wait_in_stream->id(), id(), sched_in_stream->id(), EventType::STREAM_WAIT);
+    }    
+    _cv.wait(lk, [=]{ return is_ready(); });
+    log_dead_lock(wait_in_stream->id(), id(), -1, EventType::WAIT_WOKE_UP);
 }
-void CPUSignal::execute()
+
+void CPUSignal::execute(Stream *in_stream)
 {
+    std::unique_lock<std::mutex> lk(_mutex);
+    log_dead_lock(in_stream->id(), id(), -1, EventType::SIGNAL_ON);
     signal();
     _cv.notify_all();
 }
@@ -30,7 +50,7 @@ std::shared_ptr<Wait> CPUSignal::getWaitCmd()
     return std::make_shared<CPUWait>(std::dynamic_pointer_cast<Signal>(shared_from_this()));
 }
 
-void TestCommand::execute()
+void TestCommand::execute(Stream *in_stream)
 {
     usleep(_msec_sleep * 1000);
     *_var = _test_val;
@@ -45,8 +65,9 @@ libxsmm_datatype pata_to_xsmm_dtype(DType dtype)
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
 }
 
-void CPUAddCmd::execute()
+void CPUAddCmd::execute(Stream *in_stream)
 {    
+    return;
     if (_inputs[0].rank() == 2)
     {
         libxsmm_meltw_binary_param binary_param;
@@ -98,7 +119,7 @@ void CPUAddCmd::execute()
 
         PATA_ASSERT(dt != LIBXSMM_DATATYPE_UNSUPPORTED);
 
-        libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(1, _inputs[0].volume(), &ldi, &ldi, &ldi, 
+        libxsmm_meltwfunction_binary binary_kernel = libxsmm_dispatch_meltw_binary(_inputs[0].volume(), 1, &ldi, &ldi, &ldi, 
             dt, dt, dt, binary_flags, binary_type);
         PATA_ASSERT((binary_kernel != NULL) && "JIT for BINARY TPP. Bailing...!");
         
