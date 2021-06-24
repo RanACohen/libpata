@@ -21,6 +21,10 @@ void deadlock_debug_reset();
 
 void dump_dead_lock();
 
+#ifdef ENABLE_EVENT_TRACE
 void log_dead_lock(int wait_id, int sig_id, int sig_str_id, EventType event);
+#else
+inline void log_dead_lock(int wait_id, int sig_id, int sig_str_id, EventType event) {};
+#endif
 
 #endif // LIBXLA_XLA_DEBUG_H

@@ -152,12 +152,14 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     for (unsigned i=0; i<1000; i++)
     {
         x = x + s2;
-        if (BackendManager::Inst().backend()->get_number_of_active_streams()>300)
+        /*
+        if (BackendManager::Inst().backend()->get_number_of_active_streams()>200)
         {
             extern void dump_dead_lock();
             dump_dead_lock();
             assert(false && "Deadlock!");
         }
+        */
     }
     //StreamManager::Inst().wait_for_all();
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 17516.25f);

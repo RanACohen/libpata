@@ -67,7 +67,6 @@ libxsmm_datatype pata_to_xsmm_dtype(DType dtype)
 
 void CPUAddCmd::execute(Stream *in_stream)
 {    
-    return;
     if (_inputs[0].rank() == 2)
     {
         libxsmm_meltw_binary_param binary_param;

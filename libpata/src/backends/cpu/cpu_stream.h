@@ -18,9 +18,9 @@ namespace libpata
         struct MutexFreeQueue
         {
             int _size;
-            int _get;
-            int _put;
-            T *_cyclic_buffer;
+            volatile int _get;
+            volatile int _put;
+            T*_cyclic_buffer;
 
             MutexFreeQueue(int size)
             {
@@ -82,7 +82,7 @@ namespace libpata
         protected:
             void push_impl(const CommandPtr &cmd)
             {
-                //std::unique_lock<std::mutex> lk(_mutex);
+                std::unique_lock<std::mutex> lk(_mutex);
                 auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
                 if (!cpu_cmd)
                 {

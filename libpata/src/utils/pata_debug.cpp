@@ -66,6 +66,7 @@ void dump_dead_lock()
     }
 }
 
+#ifdef ENABLE_EVENT_TRACE
 void log_dead_lock(int wait_id, int cmd_id, int sig_str_id, EventType event)
 {
     size_t i = (deadlock_put_index++) % DEADLOCK_LOG_SIZE;
@@ -76,4 +77,4 @@ void log_dead_lock(int wait_id, int cmd_id, int sig_str_id, EventType event)
     item.signal_in_str_id = sig_str_id;        
     item.event = event;
 }
-
+#endif
