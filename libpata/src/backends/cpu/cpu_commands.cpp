@@ -133,5 +133,16 @@ void CPUMatMulCmd::execute(Stream *in_stream)
     auto inB = _inputs[1];
     auto out = _outputs[0];
 
+    auto a_rows = inA.shape(0);
+    auto a_cols = inA.shape(1);
+    auto b_rows = inB.shape(0);
+    auto b_cols = inB.shape(1);
+    auto rows = out.shape(0);
+    auto cols = out.shape(1);
     
+    if (cols == b_cols && rows == a_rows) // no output split in this case
+    {
+        
+    }
+
 }

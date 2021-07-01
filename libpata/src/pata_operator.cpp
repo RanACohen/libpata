@@ -73,23 +73,20 @@ Tensor libpata::abs(const Tensor &in)
      * */
 void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews)
 {
-    auto out_rows = out.shape()[0];
-    auto out_cols = out.shape()[1];
-    auto common   = inA.shape()[1];
+    auto out_rows = out.shape(0);
+    auto out_cols = out.shape(1);
+    auto common   = inA.shape(1);
     PATA_ASSERT(inA.rank()==2 && inB.rank()==2 && out.rank()==2);
-    PATA_ASSERT(inA.shape()[0] == out_rows && inB.shape()[1]==out_cols);
+    PATA_ASSERT(inA.shape(0) == out_rows && inB.shape(1) == out_cols);
     PATA_ASSERT(common == inB.shape()[0]);
 
-    if (out_rows>256 || out_cols>256)
+    for (size_t row=0; row<out_rows; row += 256)
     {
-        for (size_t row=0; row<out_rows; row += 256)
+        for (size_t col=0; col<out_cols; col += 256)
         {
-            for (size_t col=0; col<out_cols; col += 256)
-            {
-                auto tv = out[{Range(row, row+256), Range(col, col+256)}];
-                outViews.push_back(tv);
-                schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
-            }
+            auto tv = out[{Range(row, row+256), Range(col, col+256)}];
+            outViews.push_back(tv);
+            schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
         }
     }
 }

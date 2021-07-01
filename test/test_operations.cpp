@@ -37,7 +37,7 @@ TEST(TensorOperationTests, TestAdd1) {
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;    
     //StreamManager::Inst().wait_for_all();
-    ASSERT_EQ(*x.at<float>(1,1), 6.7f);
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6.7f);
     BackendManager::Inst().backend()->wait_for_all();
 }
 
@@ -46,11 +46,16 @@ TEST(TensorOperationTests, TestMauMul1Tile) {
     Tensor a({20, 30}, FLOAT, ws);
     a.fill(0.0f, 0.25f);
     Tensor b({30, 20}, FLOAT, ws);
-    b.fill(10.0f, 1.0f);
+    b.fill(-36.0f, 0.125f);
     Tensor out({20, 20}, FLOAT, ws);
 
     TensorsList out_tiles;
     MatMul(a, b, out, out_tiles);
+    EXPECT_EQ(out_tiles.size(), 1);
+
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 1529.84375f);
+    ASSERT_FLOAT_EQ(*out.at<float>(10,10), 4942.8125f);
+    ASSERT_FLOAT_EQ(*out.at<float>(2,7), 2033.28125f);
     
 }
 
