@@ -77,6 +77,15 @@ namespace libpata
             virtual void execute(Stream *in_stream);
         };
 
+        class CPUMatMulCmd: virtual public ComputeCmd, CPUCommand
+        {
+            public:
+            CPUMatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
+                ComputeCmd("pata.matmul", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                {}
+            virtual void execute(Stream *in_stream);
+        };
+
     }
 }
 

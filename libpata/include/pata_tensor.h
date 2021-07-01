@@ -58,11 +58,14 @@ namespace libpata {
         inline void sync() const { return _impl->sync(); }
         inline bool is_contiguous() const { return _impl->is_contiguous(); }
 
-        inline CommandPtr getWaitIfNotReady() { return _impl->getWaitIfNotReady(); }
+        inline CommandPtr getWaitIfNotReady() const { return _impl->getWaitIfNotReady(); }
         inline CommandPtr get_signal_cmd() { return _impl->_signal; }
+
+        template<typename T>
+        void fill(T start_val, T step=0) { return _impl->fill(start_val, step); }
         
 
-        Tensor operator+(const Tensor &rhs) const;
+        Tensor operator+(const Tensor &rhs);
     };
 }
 #endif //LIBPATA_PATA_TENSOR_H

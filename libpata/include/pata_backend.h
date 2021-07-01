@@ -27,6 +27,7 @@ namespace libpata {
         virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms=0) = 0;
 
         virtual ComputeCmdPtr AddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output) = 0;
+        virtual ComputeCmdPtr MatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output) = 0;
     };
 
     class BackendManager {

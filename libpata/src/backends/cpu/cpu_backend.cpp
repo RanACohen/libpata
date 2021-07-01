@@ -51,10 +51,11 @@ CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)
 }
 
 ComputeCmdPtr CPUBackend::AddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output)
-{
-    // todo: put special AddCmd
-    auto c = new CPUAddCmd(lhs, rhs, output);
+{    
     return std::make_shared<CPUAddCmd>(lhs, rhs, output);
 }
 
-
+ComputeCmdPtr CPUBackend::MatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output)
+{
+    return std::make_shared<CPUMatMulCmd>(lhs, rhs, output);
+}

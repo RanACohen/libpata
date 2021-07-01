@@ -45,10 +45,6 @@ KernelFunction::KernelFunction(const char *code)
 
 }
 
-void libpata::parallel_for(const Range &index, const KernelFunction &func)
-{
-}
-
 Tensor libpata::reluN(const Tensor &in)
 {
     Tensor out(in.shape(), in.dtype(), in.workspace());
@@ -66,4 +62,34 @@ Tensor libpata::abs(const Tensor &in)
     auto cmd = BackendManager::Inst().backend()->createComputeCmd("pata.abs", {in}, {out}, {});
     schedule(cmd);
     return out;
+}
+
+/**
+     * MatMul: does a Matrix multiplication of out=A*B, 
+     * inA - Input A Matrix, must be a 2D Tensor (todo: Batched MatMul for 3D+)
+     * inB - Input B Matrix, must be a 2D Tensor
+     * out - output Matrix (already allocated) of size (A-rows,B-cols)
+     * outViews - an empty Tensor list of views to be placed after the split according to a h/w friendly split
+     * */
+void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews)
+{
+    auto out_rows = out.shape()[0];
+    auto out_cols = out.shape()[1];
+    auto common   = inA.shape()[1];
+    PATA_ASSERT(inA.rank()==2 && inB.rank()==2 && out.rank()==2);
+    PATA_ASSERT(inA.shape()[0] == out_rows && inB.shape()[1]==out_cols);
+    PATA_ASSERT(common == inB.shape()[0]);
+
+    if (out_rows>256 || out_cols>256)
+    {
+        for (size_t row=0; row<out_rows; row += 256)
+        {
+            for (size_t col=0; col<out_cols; col += 256)
+            {
+                auto tv = out[{Range(row, row+256), Range(col, col+256)}];
+                outViews.push_back(tv);
+                schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
+            }
+        }
+    }
 }

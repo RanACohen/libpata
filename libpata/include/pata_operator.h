@@ -67,10 +67,18 @@ namespace libpata {
         KernelFunction(const char *code);
     };
     
-    void parallel_for(const Range &index, const KernelFunction &func);
 
     Tensor reluN(const Tensor& in);
     Tensor abs(const Tensor& in);
+    
+    /**
+     * MatMul: does a Matrix multiplication of out=A*B, 
+     * inA - Input A Matrix, must be a 2D Tensor (todo: Batched MatMul for 3D+)
+     * inB - Input B Matrix, must be a 2D Tensor
+     * out - output Matrix (already allocated) of size (A-rows,B-cols)
+     * outViews - an empty Tensor list of views to be placed after the split according to a h/w friendly split
+     * */
+    void MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews);
 };
 
 #endif //LIBPATA_PATA_OPERATOR_H

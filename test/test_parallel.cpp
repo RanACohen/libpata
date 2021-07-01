@@ -8,6 +8,7 @@
 
 using namespace libpata;
 // Demonstrate some basic assertions.
+/*
 TEST(ParallelTests, BasicTest) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor a({10, 20, 30}, FLOAT, ws);
@@ -19,12 +20,10 @@ TEST(ParallelTests, BasicTest) {
 // 1. need to define the relation between the code and the input tensors
 // 2. need to define the relation betwwen the code and the given index space
 // 3. need to define index space mapping to tensor space
-"\
-    \
-    c[i]=a[i]+b[i];\
+    "c[i]=a[i]+b[i];\
     ");
-
 }
+*/
 /* Ran: this test is invalid, we cannot anticipate pool id ordering...
 need to think how e test the pool logic, maybe expose no of free streams?
 TEST(ParallelTests, CreateStreamsTest) {

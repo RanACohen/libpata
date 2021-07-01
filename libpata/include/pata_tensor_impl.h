@@ -72,6 +72,14 @@ namespace libpata {
             return (char*)(_memory->ptr())+ _element_size*(_base_offset+offset);
         }
 
+        template<typename T>
+        void fill(T start_val, T step)
+        {
+            PATA_ASSERT(is_contiguous() && "FIll works only on contigious tensors...");
+            T *pData = (T*)base_addr();
+            for (unsigned i=0; i<_volume; i++) pData[i]=start_val+ i*step;
+        }
+
     private:
         size_t _element_size;
         DType _dtype;

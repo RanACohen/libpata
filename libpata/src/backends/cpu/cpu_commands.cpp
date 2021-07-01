@@ -126,3 +126,12 @@ void CPUAddCmd::execute(Stream *in_stream)
         return;
     }
 }
+
+void CPUMatMulCmd::execute(Stream *in_stream)
+{
+    auto inA = _inputs[0];
+    auto inB = _inputs[1];
+    auto out = _outputs[0];
+
+    
+}

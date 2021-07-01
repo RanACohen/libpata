@@ -2,6 +2,7 @@
 // Created by rancohen on 24/5/2021.
 //
 #include "pata_memory.h"
+#include "pata_errors.h"
 
 using namespace libpata;
 
@@ -13,10 +14,14 @@ Workspace::Workspace(size_t size_in_bytes, MemoryBank bank) {
 void *Workspace::allocate(size_t size_in_bytes) {
     // todo: implement me using a normal heap
     std::lock_guard<std::mutex> guard(_heap_mutex);
-    if (_left_space<size_in_bytes)
+    if (_left_space<size_in_bytes) {
+         PATA_ASSERT((_left_space>size_in_bytes) && "out of memory");
         return nullptr;
+    }
     _left_space -= size_in_bytes;
-    return malloc(size_in_bytes);
+    auto ret = malloc(size_in_bytes);
+    PATA_ASSERT((ret != nullptr) && "malloc failed");
+    return ret;
 }
 
 void Workspace::free(void *ptr, size_t size) {

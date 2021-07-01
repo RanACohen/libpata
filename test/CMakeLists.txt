@@ -15,8 +15,8 @@ FetchContent_MakeAvailable(googletest)
 include_directories(${CMAKE_SOURCE_DIR}/libpata/include)
 
 enable_testing()
-
-add_executable(cli_test test_tensors.cpp test_parallel.cpp)
+file(GLOB SRC_FILES test_*.cpp)
+add_executable(cli_test ${SRC_FILES})
 target_link_libraries(cli_test PUBLIC pata gtest_main)
 
 include(GoogleTest)

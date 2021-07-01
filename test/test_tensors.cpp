@@ -93,38 +93,6 @@ TEST(UtilsTests, TestNonTensorOverlapInterleaved) {
     ASSERT_FALSE(t.is_ready());
 }
 
-TEST(TensorOperationTests, TestReluN) {
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({10, 20, 30}, FLOAT, ws);
-    auto x = reluN(t);
-    BackendManager::Inst().backend()->wait_for_all();
-}
-
-TEST(TensorOperationTests, TestAbs) {
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({10, 20, 30}, FLOAT, ws);
-    auto x = abs(t);
-    BackendManager::Inst().backend()->wait_for_all();
-}
-
-TEST(TensorOperationTests, TestAdd1) {
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({20, 30}, FLOAT, ws);
-    float *ptF = (float*)t.base_addr();
-    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.1;
-    Tensor s1 = t.subrange(Range(2), Range(0, 10));
-    Tensor s2 = t[{Range(2), Range(5, 15)}];
-    ASSERT_EQ(*s1.at<float>(1,1), 3.1f);
-    ASSERT_EQ(*s2.at<float>(1,1), 3.6f);
-
-    EXPECT_EQ(s1.shape(), s2.shape());
-    auto x = s1 + s2;    
-    //StreamManager::Inst().wait_for_all();
-    ASSERT_EQ(*x.at<float>(1,1), 6.7f);
-    BackendManager::Inst().backend()->wait_for_all();
-}
-
-
 TEST(TensorPerformanceTests, TestTimeMeasure) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
@@ -139,29 +107,21 @@ extern std::atomic<size_t> deadlock_put_index;
 
 TEST(TensorPerformanceTests, TestAdd1000) {
     deadlock_put_index=0;
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor t({16, 64}, FLOAT, ws);
+    auto ws = std::make_shared<Workspace>(10000000000);
+    Tensor t({512, 1024}, FLOAT, ws);
     float *ptF = (float*)t.base_addr();
     for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.25;
-    Tensor s1 = t.subrange(Range(2), Range(0, 10));
-    Tensor s2 = t[{Range(2), Range(5, 15)}];
-    ASSERT_FLOAT_EQ(*s1.at<float>(1,1), 16.25f);
-    ASSERT_FLOAT_EQ(*s2.at<float>(1,1), 17.5f);
+    Tensor s1 = t.subrange(Range(256));
+    Tensor s2 = t[{Range(256,512)}];
+    ASSERT_FLOAT_EQ(*s1.at<float>(1,1), (0.25+s1.shape()[1]*0.25));
+    ASSERT_FLOAT_EQ(*s2.at<float>(1,1), (1+s2.shape()[1]*(1+s1.shape()[0]))*0.25);
     Tensor x = s1;
     EXPECT_EQ(s1.shape(), s2.shape());
-    for (unsigned i=0; i<1000; i++)
+    for (unsigned i=0; i<100; i++)
     {
         x = x + s2;
-        /*
-        if (BackendManager::Inst().backend()->get_number_of_active_streams()>200)
-        {
-            extern void dump_dead_lock();
-            dump_dead_lock();
-            assert(false && "Deadlock!");
-        }
-        */
     }
     //StreamManager::Inst().wait_for_all();
-    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 17516.25f);
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6579472.0f);
     BackendManager::Inst().backend()->wait_for_all();
 }

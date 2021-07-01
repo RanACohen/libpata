@@ -295,7 +295,7 @@ bool TensorImpl::is_view_overlap(const std::shared_ptr<TensorImpl> &sibling_view
 }
 
 // elementwise add
-Tensor Tensor::operator+(const Tensor &rhs) const
+Tensor Tensor::operator+(const Tensor &rhs)
 {
     PATA_ASSERT(shape() == rhs.shape()); // todo : support broadcasting later
     PATA_ASSERT(dtype() == rhs.dtype()); // no implicit casting
@@ -305,6 +305,17 @@ Tensor Tensor::operator+(const Tensor &rhs) const
 
     // todo: Can I send my own object? Or maybe copy? does it make sense?
     auto cmd = BackendManager::Inst().backend()->AddCmd(*this, rhs, out_tensor);
-    schedule(cmd);
+    auto stream = BackendManager::Inst().backend()->createStream();
+    CommandPtr wait = getWaitIfNotReady();
+    if (wait) {                        
+        stream->push(wait);
+    }
+    wait = rhs.getWaitIfNotReady();
+    if (wait)  {                        
+        stream->push(wait);
+    }
+    out_tensor.mark_not_ready();
+    stream->push(cmd);
+    stream->push(out_tensor.get_signal_cmd());
     return out_tensor;
 }

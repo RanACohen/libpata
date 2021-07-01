@@ -88,9 +88,10 @@ namespace libpata
                 {
                     PATA_ASSERT(cpu_cmd && "pushing not a CPU command!");
                 }
+                bool bNotify = _cmd_queue.empty();
                 _cmd_queue.push(cmd);
                 //PATA_ASSERT(_cmd_queue.size() < 5);
-                _cv.notify_one();
+                if (bNotify) _cv.notify_one();
                 log_dead_lock(id(), cpu_cmd->id(), -1, EventType::CMD_PUSH);
             }
 
