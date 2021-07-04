@@ -1,3 +1,5 @@
+#include "libxsmm.h" // for test this is temporary
+
 #include "pata_tensor.h"
 #include "pata_errors.h"
 #include "pata_operator.h"
@@ -89,4 +91,31 @@ void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsL
             schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
         }
     }
+}
+
+
+bool libpata::test_Libxsmm(const Tensor& a, const Tensor& b, Tensor& out)
+{
+
+    float *pInA = a.at<float>(0,0);
+    float *pInB = b.at<float>(0,0);
+    float *pOutC = out.at<float>(0,0);
+
+    libxsmm_blasint lda,ldb,ldc;
+    lda = a.shape(0);
+    ldb = b.shape(0);
+    ldc = out.shape(0);
+    libxsmm_blasint m,n,k;
+    m = a.shape(0);
+    n = b.shape(1);
+    k = a.shape(1);
+     
+    libxsmm_mmfunction<float> xmm(LIBXSMM_MELTW_FLAG_FUSE_NONE, 
+                                        m, n, k, // m,n,k
+                                        lda, ldb, ldc, 1);
+    std::cout << "Starting Matrix Multuiply\n";
+    xmm(pInA, pInB, pOutC);
+    std::cout << "Done\n";
+
+    return true;
 }

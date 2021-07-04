@@ -1,8 +1,11 @@
 //
 // Created by rancohen on 24/5/2021.
 //
+#include "libxsmm.h"
+
 #include "pata_memory.h"
 #include "pata_errors.h"
+
 
 using namespace libpata;
 
@@ -18,8 +21,8 @@ void *Workspace::allocate(size_t size_in_bytes) {
          PATA_ASSERT((_left_space>size_in_bytes) && "out of memory");
         return nullptr;
     }
-    _left_space -= size_in_bytes;
-    auto ret = malloc(size_in_bytes);
+    _left_space -= size_in_bytes;    
+    auto ret = libxsmm_malloc(size_in_bytes);
     PATA_ASSERT((ret != nullptr) && "malloc failed");
     return ret;
 }
@@ -27,7 +30,7 @@ void *Workspace::allocate(size_t size_in_bytes) {
 void Workspace::free(void *ptr, size_t size) {
     std::lock_guard<std::mutex> guard(_heap_mutex);
     _left_space += size;
-    ::free(ptr);
+    libxsmm_free(ptr);
 }
 
 /**

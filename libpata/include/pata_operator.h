@@ -79,6 +79,8 @@ namespace libpata {
      * outViews - an empty Tensor list of views to be placed after the split according to a h/w friendly split
      * */
     void MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews);
+
+    bool test_Libxsmm(const Tensor& inA, const Tensor& inB, Tensor& out);
 };
 
 #endif //LIBPATA_PATA_OPERATOR_H

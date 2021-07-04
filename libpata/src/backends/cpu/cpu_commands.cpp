@@ -133,16 +133,33 @@ void CPUMatMulCmd::execute(Stream *in_stream)
     auto inB = _inputs[1];
     auto out = _outputs[0];
 
-    auto a_rows = inA.shape(0);
-    auto a_cols = inA.shape(1);
-    auto b_rows = inB.shape(0);
-    auto b_cols = inB.shape(1);
-    auto rows = out.shape(0);
-    auto cols = out.shape(1);
+    libxsmm_blasint a_rows = inA.shape(0);
+    libxsmm_blasint common = inA.shape(1);
+    libxsmm_blasint b_rows = inB.shape(0);
+    libxsmm_blasint b_cols = inB.shape(1);
+    libxsmm_blasint rows = out.shape(0);
+    libxsmm_blasint cols = out.shape(1);
+    float alpha = 1.f;
+    float beta = 0.f;
+    libxsmm_blasint lda = inA.shape(0);
+    libxsmm_blasint ldb = inB.shape(0);
+    libxsmm_blasint ldc = out.shape(0);
     
     if (cols == b_cols && rows == a_rows) // no output split in this case
-    {
-        
+    {   
+        std::cout << "Starting Matrix Multuiply JIT\n";
+        libxsmm_mmfunction<float> xmm(LIBXSMM_MELTW_FLAG_FUSE_NONE, 
+                                        rows, cols, common, //m,n,k
+                                        lda,ldb, ldc, 1);
+        std::cout << "Starting Matrix Multuiply\n";
+        xmm((float*)inA.base_addr(), (float*)inB.base_addr(), (float*)out.base_addr());
+        /*
+        libxsmm_sgemm(nullptr, nullptr, 
+                        &rows, &cols, &common, &alpha, 
+                        inA.at<float>(0,0), &lda, 
+                        inB.at<float>(0,0), &ldb, &beta, 
+                        out.at<float>(0,0), &ldc);
+        */
+        std::cout << "Finished Matrix Multuiply\n";
     }
-
 }

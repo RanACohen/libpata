@@ -41,13 +41,14 @@ TEST(TensorOperationTests, TestAdd1) {
     BackendManager::Inst().backend()->wait_for_all();
 }
 
-TEST(TensorOperationTests, TestMauMul1Tile) {
+TEST(TensorOperationTests, TestMatMul1Tile) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor a({20, 30}, FLOAT, ws);
     a.fill(0.0f, 0.25f);
     Tensor b({30, 20}, FLOAT, ws);
     b.fill(-36.0f, 0.125f);
-    Tensor out({20, 20}, FLOAT, ws);
+    Tensor out_base({30, 30}, FLOAT, ws);
+    Tensor out = out_base[{Range(20), Range(20)}];
 
     TensorsList out_tiles;
     MatMul(a, b, out, out_tiles);
@@ -55,7 +56,24 @@ TEST(TensorOperationTests, TestMauMul1Tile) {
 
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 1529.84375f);
     ASSERT_FLOAT_EQ(*out.at<float>(10,10), 4942.8125f);
-    ASSERT_FLOAT_EQ(*out.at<float>(2,7), 2033.28125f);
-    
+    ASSERT_FLOAT_EQ(*out.at<float>(2,7), 2033.28125f);    
+}
+
+
+TEST(TensorOperationTests, TestLibxsmm) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor a({20, 30}, FLOAT, ws);
+    a.fill(2.0f);
+    Tensor b({30, 20}, FLOAT, ws);
+    b.fill(2.0f);
+    Tensor out({20, 20}, FLOAT, ws);
+    out.fill(0.f);
+
+    EXPECT_TRUE(test_Libxsmm(a,b,out));
+
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 120.0);
+    ASSERT_FLOAT_EQ(*out.at<float>(10,10), 120.0);
+    ASSERT_FLOAT_EQ(*out.at<float>(2,7), 120.0f);    
+
 }
 

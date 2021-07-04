@@ -41,11 +41,12 @@ namespace libpata {
 
         // access impl private members to avoid nested function calls
         inline const Shape &shape() const { return _impl->_shape; }
-        inline const size_t &shape(int dim) const { return _impl->_shape[dim]; }
+        inline const size_t shape(int dim) const { return _impl->_shape[dim]; }
         inline DType dtype() const { return _impl->_dtype; }
         inline unsigned rank() const { return _impl->_shape.size(); }
         // Element stride, not bytes, last value is always 1
         inline const Shape &stride() const { return _impl->_stride; }
+        inline const size_t stride(int dim) const { return _impl->_stride[dim]; }
         inline const WorkspacePtr &workspace() const { return _impl->_memory->workspace(); }
 
         template<typename T, typename... size_t>
