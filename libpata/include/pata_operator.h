@@ -80,6 +80,16 @@ namespace libpata {
      * */
     void MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews);
 
+    /**
+     * Add2D: does parallel Add operation of out=A+B, 
+     * inA - Input A Matrix, must be a 2D Tensor
+     * inB - Input B Matrix, must be a 2D Tensor
+     * out - output Matrix (already allocated) of size (A-rows,B-cols)
+     * outViews - an empty Tensor list of views to be placed after the split according to a h/w friendly split
+     * block_size - the block size to partition the rows into parallel blocks/views
+     * */
+    void Add2D(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews, int block_size=10); 
+
     bool test_Libxsmm(const Tensor& inA, const Tensor& inB, Tensor& out);
 };
 

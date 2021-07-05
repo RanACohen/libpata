@@ -13,16 +13,17 @@
 
 namespace libpata {         
     // Wrap it publicly so users can treat is regular object and pass it via value and create temp in stack
-    class Tensor
+    class Tensor : public std::enable_shared_from_this<Tensor>
     {
         typedef std::shared_ptr<TensorImpl> ImplPtr;
         ImplPtr _impl;
-        explicit Tensor(const ImplPtr &impl):_impl(impl){}
+        explicit Tensor(const ImplPtr &impl):_impl(impl){ _impl->set_signal(shared_from_this()); }
 
     public:
         explicit Tensor() = default;
         explicit Tensor(const Shape &shape, DType dtype, const WorkspacePtr &workspace):
-            _impl(std::make_shared<TensorImpl>(shape, dtype, workspace)) {}
+            _impl(std::make_shared<TensorImpl>(shape, dtype, workspace))
+              {}
         explicit Tensor(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace):
                 _impl(std::make_shared<TensorImpl>(shape, stride, dtype, workspace)) {}
        
@@ -56,6 +57,7 @@ namespace libpata {
         inline size_t volume() const { return _impl->volume(); }
 
         inline void mark_not_ready() { _impl->mark_not_ready();}
+        inline void mark_ready() { _impl->mark_ready();}
         inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
         inline void sync() const { return _impl->sync(); }
         inline bool is_contiguous() const { return _impl->is_contiguous(); }

@@ -41,12 +41,13 @@ void CPUSignal::execute(Stream *in_stream)
 {
     std::unique_lock<std::mutex> lk(_mutex);
     log_dead_lock(in_stream->id(), id(), -1, EventType::SIGNAL_ON);
-    signal();
-    _cv.notify_all();
+    _orig_tensor->mark_ready();
 }
 
 std::shared_ptr<Wait> CPUSignal::getWaitCmd()
 {
+    if (is_ready())
+        return nullptr;
     return std::make_shared<CPUWait>(std::dynamic_pointer_cast<Signal>(shared_from_this()));
 }
 

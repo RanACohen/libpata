@@ -41,6 +41,24 @@ TEST(TensorOperationTests, TestAdd1) {
     BackendManager::Inst().backend()->wait_for_all();
 }
 
+TEST(TensorOperationTests, TestParallelAdd2D) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor a({20, 30}, FLOAT, ws);
+    a.fill(2.0f);
+    Tensor b({20, 30}, FLOAT, ws);
+    b.fill(2.0f);
+    Tensor out({20, 30}, FLOAT, ws);
+    out.fill(0.f);
+    TensorsList out_tiles;
+    
+    //Add2D(a, b, out, out_tiles);
+    //EXPECT_EQ(out_tiles.size(), 2);
+
+    //BackendManager::Inst().backend()->wait_for_all();
+
+    //ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
+}
+
 TEST(TensorOperationTests, TestMatMul1Tile) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor a({20, 30}, FLOAT, ws);

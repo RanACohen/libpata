@@ -28,14 +28,12 @@ void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
     {
         out.mark_not_ready();
     }
-
+    
     stream->push(cmd);
     for (auto out: cmd->outputs())
     {
-        stream->push(out.get_signal_cmd());
+        stream->push(out.get_signal_cmd());        
     }
-    auto duration = chrono::high_resolution_clock::now().time_since_epoch();
-    //schedule_time_map.push_back(std::chrono::duration_cast<std::chrono::microseconds>(duration));
 }
 
 KernelFunction::KernelFunction(const std::string &code)
@@ -93,10 +91,25 @@ void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsL
     }
 }
 
+void libpata::Add2D(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews, int block_size)
+{
+    auto out_rows = out.shape(0);
+    auto out_cols = out.shape(1);
+
+    PATA_ASSERT(inA.rank()==2 && inB.rank()==2 && out.rank()==2);
+    PATA_ASSERT(inA.shape(0) == out_rows && inA.shape(1) == out_cols);
+    PATA_ASSERT(inB.shape(0) == out_rows && inB.shape(1) == out_cols);
+
+    for (size_t row=0; row<out_rows; row += block_size)
+    {
+        auto tv = out[{Range(row, row+block_size), Range(out_cols)}];
+        outViews.push_back(tv);
+        schedule(BackendManager::Inst().backend()->AddCmd(inA, inB, tv));
+    }
+}
 
 bool libpata::test_Libxsmm(const Tensor& a, const Tensor& b, Tensor& out)
 {
-
     float *pInA = a.at<float>(0,0);
     float *pInB = b.at<float>(0,0);
     float *pOutC = out.at<float>(0,0);

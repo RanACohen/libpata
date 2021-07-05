@@ -40,9 +40,9 @@ ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const Ten
     return std::make_shared<CPUComputeCmd>(op_name, inputs, outputs, attributes);
 }
 
-std::shared_ptr<Signal> CPUBackend::createSignal()
+std::shared_ptr<Signal> CPUBackend::createSignal(std::shared_ptr<Tensor> tensor)
 {
-    return std::make_shared<CPUSignal>();
+    return std::make_shared<CPUSignal>(tensor);
 }
 
 CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)

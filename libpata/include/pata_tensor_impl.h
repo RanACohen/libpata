@@ -55,9 +55,10 @@ namespace libpata {
         bool is_view_overlap(const TensorPtr &sibling_view);
 
         size_t get_pos_offset(const Shape &pos) const; // in elements units
-        void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
         CommandPtr getWaitIfNotReady();
-        void mark_not_ready();
+        void mark_not_ready(bool from_view = false, bool from_peer = false);
+        void mark_ready(bool from_view = false, bool from_peer = false);
+
         void sync();
 
         inline void *base_addr() const {
@@ -98,6 +99,7 @@ namespace libpata {
         size_t _base_offset=0;
         MemoryBlockPtr  _memory;
 
+        void set_signal (std::shared_ptr<Tensor>& tensor);
         void remove_overlap(TensorImpl *peer);
         void register_as_view(const TensorPtr &view);
         void add_me_to(WaekTensorList &list)

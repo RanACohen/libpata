@@ -7,6 +7,7 @@
 #include <memory>
 #include <mutex>
 #include <condition_variable>
+#include <atomic>
 
 namespace libpata {    
     class Stream;
@@ -19,17 +20,15 @@ namespace libpata {
 
 
     class Wait;
-    class Signal : public virtual Command {
-        private:            
-            bool _ready = false;
+    class Signal : public virtual Command { 
         public:            
-            Signal(){} 
+            Signal() = default;
             virtual ~Signal()=0; // mark trhis abstract, must inherit!
 
             virtual std::shared_ptr<Wait> getWaitCmd() = 0;
-
-            inline void signal() { _ready = true;}
-            inline bool is_ready() { return _ready; }
+            virtual void mark_not_ready() =0; 
+            virtual void mark_ready() = 0;
+            virtual bool is_ready() = 0;
     };
 
     class Wait: public virtual Command {
