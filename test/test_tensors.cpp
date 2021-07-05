@@ -121,7 +121,28 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     {
         x = x + s2;
     }
-    //StreamManager::Inst().wait_for_all();
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6579472.0f);
     BackendManager::Inst().backend()->wait_for_all();
+}
+
+TEST(TensorPerformanceTests, TestParallelAddByViews) {
+    auto ws = std::make_shared<Workspace>(1000000);
+    Tensor t({512, 1024}, FLOAT, ws);
+    float *ptF = (float*)t.base_addr();
+    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.25;
+    /*Tensor x = t;
+    TensorsList out_tiles;
+    
+    for (unsigned int i=0 ; i < x.shape()[0]; i++)
+    {
+        auto tv = x[{Range(i, i+1), Range(x.shape()[1]), Range(x.shape()[2])}];
+        tv = tv + t[{Range(i, i+1), Range(x.shape()[1]), Range(x.shape()[2])}];
+        out_tiles.push_back(tv);
+    }
+    
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 17516.25f);
+    for (auto t: out_tiles)
+        ASSERT_FLOAT_EQ(*t.at<float>(1,1), 17516.25f);
+    
+    BackendManager::Inst().backend()->wait_for_all();*/
 }
