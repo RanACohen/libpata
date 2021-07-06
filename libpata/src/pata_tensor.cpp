@@ -16,8 +16,9 @@ int libpata::dtype_byte_size(DType dtype)
 }
 
 void Tensor::set_signal()
-{ 
-    _impl->_signal = BackendManager::Inst().backend()->createSignal(shared_from_this()); 
+{
+    auto s = shared_from_this();
+    _impl->_signal = BackendManager::Inst().backend()->createSignal(s); 
 }
 
 TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace)

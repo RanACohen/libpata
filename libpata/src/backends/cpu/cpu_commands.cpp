@@ -41,7 +41,10 @@ void CPUSignal::execute(Stream *in_stream)
 {
     std::unique_lock<std::mutex> lk(_mutex);
     log_dead_lock(in_stream->id(), id(), -1, EventType::SIGNAL_ON);
-    _orig_tensor->mark_ready();
+    auto t = _orig_tensor.lock();
+    if (!t)
+        return;
+    t->mark_ready();
 }
 
 std::shared_ptr<Wait> CPUSignal::getWaitCmd()
