@@ -99,7 +99,6 @@ namespace libpata {
         size_t _base_offset=0;
         MemoryBlockPtr  _memory;
 
-        void set_signal (std::shared_ptr<Tensor>& tensor);
         void remove_overlap(TensorImpl *peer);
         void register_as_view(const TensorPtr &view);
         void add_me_to(WaekTensorList &list)

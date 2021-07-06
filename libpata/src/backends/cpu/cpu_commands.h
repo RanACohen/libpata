@@ -43,10 +43,10 @@ namespace libpata
             std::condition_variable _cv;
             std::mutex _mutex;      
             std::atomic<int> _ready;
-            std::shared_ptr<TensorImpl> _orig_tensor;
+            std::shared_ptr<Tensor> _orig_tensor;
 
         public:
-            CPUSignal(std::shared_ptr<TensorImpl> t): _ready (0), _orig_tensor(t) {}
+            CPUSignal(std::shared_ptr<Tensor> t): _ready (0), _orig_tensor(t) {}
             void wait(Stream *wait_in_stream);
             virtual void execute(Stream *in_stream);
             virtual std::shared_ptr<Wait> getWaitCmd();

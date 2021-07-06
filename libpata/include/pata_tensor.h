@@ -17,7 +17,7 @@ namespace libpata {
     {
         typedef std::shared_ptr<TensorImpl> ImplPtr;
         ImplPtr _impl;
-        explicit Tensor(const ImplPtr &impl):_impl(impl){ _impl->set_signal(shared_from_this()); }
+        explicit Tensor(const ImplPtr &impl):_impl(impl) { set_signal(); }
 
     public:
         explicit Tensor() = default;
@@ -68,6 +68,7 @@ namespace libpata {
         template<typename T>
         void fill(T start_val, T step=0) { return _impl->fill(start_val, step); }
         
+        void set_signal();
 
         Tensor operator+(const Tensor &rhs);
     };

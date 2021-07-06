@@ -15,6 +15,10 @@ int libpata::dtype_byte_size(DType dtype)
     return ((dtype < 0) || (dtype > DType::LAST)) ? -1 : DTypeByteSize[dtype];
 }
 
+void Tensor::set_signal()
+{ 
+    _impl->_signal = BackendManager::Inst().backend()->createSignal(shared_from_this()); 
+}
 
 TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace)
 {
@@ -55,7 +59,6 @@ TensorImpl::TensorImpl(const Shape &shape, const Shape &stride, DType dtype, con
 
     auto s = stride[0] * shape[0] * dtype_byte_size(dtype);
     _memory = MemoryBlock::allocate(s, workspace);
-    _signal = BackendManager::Inst().backend()->createSignal(shared_from_this());
 }
 
 #define CLIP(v, s, e) v = v < (s) ? (s) : v > (e) ? (e) \
@@ -89,7 +92,6 @@ TensorImpl::TensorImpl(const TensorPtr &base, const TensorRange &t_range)
         _start_pos.push_back(start);
     }
     _base_offset = base->get_pos_offset(_start_pos);
-    _signal = BackendManager::Inst().backend()->createSignal(shared_from_this());    
 }
 
 TensorImpl::~TensorImpl()
@@ -103,11 +105,6 @@ TensorImpl::~TensorImpl()
             std::cout << "oops!\n";
         }
    }
-}
-
-void TensorImpl::set_signal(std::shared_ptr<Tensor>& tensor)
-{ 
-    _signal = BackendManager::Inst().backend()->createSignal(tensor);
 }
 
 void TensorImpl::remove_overlap(TensorImpl *peer)
