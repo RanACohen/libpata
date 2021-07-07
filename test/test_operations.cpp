@@ -51,10 +51,8 @@ TEST(TensorOperationTests, TestParallelAdd2D) {
     out.fill(0.f);
     TensorsList out_tiles;
     
-    //Add2D(a, b, out, out_tiles);
-    //EXPECT_EQ(out_tiles.size(), 2);
-
-    //BackendManager::Inst().backend()->wait_for_all();
+    Add2D(a, b, out, out_tiles);
+    BackendManager::Inst().backend()->wait_for_all();
 
     //ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
 }

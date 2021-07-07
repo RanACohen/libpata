@@ -17,7 +17,7 @@ namespace libpata {
     {
         typedef std::shared_ptr<TensorImpl> ImplPtr;
         ImplPtr _impl;
-        explicit Tensor(const ImplPtr &impl):_impl(impl) { set_signal(); }
+        explicit Tensor(const ImplPtr &impl):_impl(impl) {}
 
     public:
         explicit Tensor() = default;
@@ -25,7 +25,8 @@ namespace libpata {
             _impl(std::make_shared<TensorImpl>(shape, dtype, workspace))
               {}
         explicit Tensor(const Shape &shape, const Shape &stride, DType dtype, const WorkspacePtr &workspace):
-                _impl(std::make_shared<TensorImpl>(shape, stride, dtype, workspace)) {}
+                _impl(std::make_shared<TensorImpl>(shape, stride, dtype, workspace)) 
+              {}
        
         Tensor operator[](const TensorRange &tr){
             return Tensor(_impl->subrange(tr));
@@ -57,7 +58,6 @@ namespace libpata {
         inline size_t volume() const { return _impl->volume(); }
 
         inline void mark_not_ready() { _impl->mark_not_ready();}
-        inline void mark_ready() { _impl->mark_ready();}
         inline bool is_ready() { return !_impl->_signal || _impl->_signal->is_ready(); }
         inline void sync() const { return _impl->sync(); }
         inline bool is_contiguous() const { return _impl->is_contiguous(); }
@@ -68,7 +68,6 @@ namespace libpata {
         template<typename T>
         void fill(T start_val, T step=0) { return _impl->fill(start_val, step); }
         
-        void set_signal();
 
         Tensor operator+(const Tensor &rhs);
     };

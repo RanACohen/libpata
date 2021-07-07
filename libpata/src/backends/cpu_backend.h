@@ -24,7 +24,7 @@ namespace libpata {
             virtual StreamPtr createStream();
             virtual int get_number_of_active_streams();
             virtual void wait_for_all();
-            virtual std::shared_ptr<Signal> createSignal(std::weak_ptr<Tensor> tensor);
+            virtual std::shared_ptr<Signal> createSignal();
             virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes);
             virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms);
 

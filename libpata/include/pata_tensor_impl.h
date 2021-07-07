@@ -56,8 +56,8 @@ namespace libpata {
 
         size_t get_pos_offset(const Shape &pos) const; // in elements units
         CommandPtr getWaitIfNotReady();
-        void mark_not_ready(bool from_view = false, bool from_peer = false);
-        void mark_ready(bool from_view = false, bool from_peer = false);
+        void set_signal(const std::shared_ptr<Signal> &signal, bool from_view = false, bool from_peer = false);
+        void mark_not_ready();
 
         void sync();
 

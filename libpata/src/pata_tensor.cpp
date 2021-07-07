@@ -15,12 +15,6 @@ int libpata::dtype_byte_size(DType dtype)
     return ((dtype < 0) || (dtype > DType::LAST)) ? -1 : DTypeByteSize[dtype];
 }
 
-void Tensor::set_signal()
-{
-    auto s = shared_from_this();
-    _impl->_signal = BackendManager::Inst().backend()->createSignal(s); 
-}
-
 TensorImpl::TensorImpl(const Shape &shape, DType dtype, const WorkspacePtr &workspace)
 {
     _dtype = dtype;
@@ -123,21 +117,27 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
     }
 }
 
-void TensorImpl::mark_not_ready(bool from_view, bool from_peer)
+void TensorImpl::mark_not_ready()
 {
-    _signal->mark_not_ready(); // add to signal counter if called again
+    set_signal(BackendManager::Inst().backend()->createSignal());
+}
+
+void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
+{
+    PATA_ASSERT(!_signal || _signal->is_ready()); // if this tensor is not ready we cannot overide it
+    _signal = signal;    
     
     if (!from_peer)
     {
         if (_view_base) // if I am a view and not ready, so is my base not ready
-            _view_base->mark_not_ready(true, false);
+            _view_base->set_signal(signal, true, false);
 
         for (const auto &v : _overlap_tensors)
         {
             auto vi = v.lock();
             if (!vi)
                 continue;
-            vi->mark_not_ready(false, true); // can propaget up but no do the base
+            vi->set_signal(signal, false, true); // can propaget up but no do the base
         }
     }
 
@@ -151,47 +151,18 @@ void TensorImpl::mark_not_ready(bool from_view, bool from_peer)
         auto vi = v.lock();
         if (!vi)
             continue;
-        vi->mark_not_ready();
+        vi->set_signal(signal);
     }   
 }
-
-void TensorImpl::mark_ready(bool from_view, bool from_peer)
-{
-    _signal->mark_ready(); // add to signal counter if called again
-    
-    if (!from_peer)
-    {
-        if (_view_base) // if I am a view and not ready, so is my base not ready
-            _view_base->mark_ready(true, false);
-
-        for (const auto &v : _overlap_tensors)
-        {
-            auto vi = v.lock();
-            if (!vi)
-                continue;
-            vi->mark_ready(false, true); // can propaget up but no do the base
-        }
-    }
-
-    // set the signal event on all the other tensors that are my view
-    //if the base is not ready, so are all the views
-    // only if not coming from a view, so we will not recurse
-    if (from_view)
-        return;
-    for (const auto &v : _views)
-    {
-        auto vi = v.lock();
-        if (!vi)
-            continue;
-        vi->mark_ready();
-    }   
-}
-
 
 CommandPtr TensorImpl::getWaitIfNotReady()
 {    
     std::lock_guard<std::mutex> guard(_signal_mutex);
-    return _signal->getWaitCmd();
+    if (_signal && !_signal->is_ready())
+    {
+        return _signal->getWaitCmd();
+    }
+    return CommandPtr();
 }
 
 size_t TensorImpl::get_pos_offset(const Shape &pos) const

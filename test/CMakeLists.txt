@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(cli_test)
 
 set(CMAKE_CXX_STANDARD 14)
+add_definitions(-DCMAKE_BUILD_TYPE=Debug)
 
 include(FetchContent)
 FetchContent_Declare(

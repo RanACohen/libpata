@@ -42,21 +42,12 @@ namespace libpata
         {           
             std::condition_variable _cv;
             std::mutex _mutex;      
-            std::atomic<int> _ready;
-            std::weak_ptr<Tensor> _orig_tensor;
 
         public:
-            CPUSignal(std::weak_ptr<Tensor> t): _ready (0), _orig_tensor(t) {}
+            CPUSignal() {}
             void wait(Stream *wait_in_stream);
             virtual void execute(Stream *in_stream);
             virtual std::shared_ptr<Wait> getWaitCmd();
-            virtual void mark_not_ready() { _ready++;}
-            inline virtual void mark_ready()
-            {
-                if (!is_ready()) _ready--;
-                _cv.notify_all();
-            }
-            inline bool is_ready() { return _ready == 0; }
         };
 
         class CPUWait : virtual public Wait, CPUCommand

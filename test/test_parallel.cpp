@@ -60,10 +60,9 @@ TEST(ParallelTests, PushStreamsTest) {
     auto ws = std::make_shared<Workspace>(1000000);        
     auto str = backend->createStream();
     int v=0;
-    auto x = std::make_shared<Tensor>();        
 
     auto cmd = backend->createTestCmd(&v, 8, 30);
-    auto sig = backend->createSignal(x);
+    auto sig = backend->createSignal();
     str->push(cmd);
     str->push(sig);
     str->wait_for_idle();

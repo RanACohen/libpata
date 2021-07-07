@@ -20,15 +20,18 @@ namespace libpata {
 
 
     class Wait;
-    class Signal : public virtual Command { 
+    class Signal : public virtual Command {
+        protected:
+            bool _ready = false;
+ 
         public:            
             Signal() = default;
             virtual ~Signal()=0; // mark trhis abstract, must inherit!
-
+            
             virtual std::shared_ptr<Wait> getWaitCmd() = 0;
-            virtual void mark_not_ready() =0; 
-            virtual void mark_ready() = 0;
-            virtual bool is_ready() = 0;
+            inline void signal() { _ready = true;}
+            inline bool is_ready() { return _ready; }
+
     };
 
     class Wait: public virtual Command {
