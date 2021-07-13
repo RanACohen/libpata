@@ -119,12 +119,16 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
 
 void TensorImpl::mark_not_ready()
 {
+    if (_signal)
+    {
+        std::cout << "Signal already exists, no need to reset it.\n";
+        return; 
+    }
     set_signal(BackendManager::Inst().backend()->createSignal());
 }
 
 void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
 {
-    PATA_ASSERT(!_signal || _signal->is_ready()); // if this tensor is not ready we cannot overide it
     _signal = signal;    
     
     if (!from_peer)

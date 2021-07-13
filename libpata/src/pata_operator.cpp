@@ -91,7 +91,7 @@ void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsL
     }
 }
 
-void libpata::Add2D(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews, int block_size)
+void libpata::Add2D(Tensor& inA, Tensor& inB, Tensor& out, TensorsList &outViews, int block_size)
 {
     auto out_rows = out.shape(0);
     auto out_cols = out.shape(1);
@@ -102,9 +102,11 @@ void libpata::Add2D(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsLi
 
     for (size_t row=0; row<out_rows; row += block_size)
     {
+        auto inA_view = inA[{Range(row, row+block_size), Range(out_cols)}];
+        auto inB_view = inB[{Range(row, row+block_size), Range(out_cols)}];
         auto tv = out[{Range(row, row+block_size), Range(out_cols)}];
         outViews.push_back(tv);
-        schedule(BackendManager::Inst().backend()->AddCmd(inA, inB, tv));
+        schedule(BackendManager::Inst().backend()->AddCmd(inA_view, inB_view, tv));
     }
 }
 

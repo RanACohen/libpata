@@ -88,7 +88,7 @@ namespace libpata {
      * outViews - an empty Tensor list of views to be placed after the split according to a h/w friendly split
      * block_size - the block size to partition the rows into parallel blocks/views
      * */
-    void Add2D(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsList &outViews, int block_size=10); 
+    void Add2D(Tensor& inA, Tensor& inB, Tensor& out, TensorsList &outViews, int block_size=10); 
 
     bool test_Libxsmm(const Tensor& inA, const Tensor& inB, Tensor& out);
 };
