@@ -84,9 +84,10 @@ void libpata::MatMul(const Tensor& inA, const Tensor& inB, Tensor& out, TensorsL
     {
         for (size_t col=0; col<out_cols; col += 256)
         {
-            auto tv = out[{Range(row, row+256), Range(col, col+256)}];
-            outViews.push_back(tv);
-            schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
+            // auto tv = out[{Range(row, row+256), Range(col, col+256)}];
+            outViews.push_back(out);
+            // schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, tv));
+            schedule(BackendManager::Inst().backend()->MatMulCmd(inA, inB, out));
         }
     }
 }

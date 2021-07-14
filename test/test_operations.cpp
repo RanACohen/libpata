@@ -57,22 +57,35 @@ TEST(TensorOperationTests, TestParallelAdd2D) {
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
 }
 
+
 TEST(TensorOperationTests, TestMatMul1Tile) {
     auto ws = std::make_shared<Workspace>(1000000);
-    Tensor a({20, 30}, FLOAT, ws);
-    a.fill(0.0f, 0.25f);
-    Tensor b({30, 20}, FLOAT, ws);
-    b.fill(-36.0f, 0.125f);
-    Tensor out_base({30, 30}, FLOAT, ws);
-    Tensor out = out_base[{Range(20), Range(20)}];
+    Tensor a({2, 3}, FLOAT, ws);
+    //a.fill(2.0f);
+    *a.at<float>(0,0) = 0.f;
+    *a.at<float>(0,1) = 0.75f;
+    *a.at<float>(0,2) = 0.25f;
+    *a.at<float>(1,0) = 1.f;
+    *a.at<float>(1,1) = 0.5f;
+    *a.at<float>(1,2) = 1.25f;
+    
+    Tensor b({3, 2}, FLOAT, ws);
+    b.fill(1.f);
+
+    Tensor out({2, 2}, FLOAT, ws);
+
+    // libxsmm expects the output tensor to be initialized to zeros.
+    // fill function expects the tensor to be continous (if out is a view - it will not be continous)
+    out.fill(0.f);
 
     TensorsList out_tiles;
     MatMul(a, b, out, out_tiles);
     EXPECT_EQ(out_tiles.size(), 1);
 
-    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 1529.84375f);
-    ASSERT_FLOAT_EQ(*out.at<float>(10,10), 4942.8125f);
-    ASSERT_FLOAT_EQ(*out.at<float>(2,7), 2033.28125f);    
+    ASSERT_FLOAT_EQ(*out.at<float>(0,0), 0.75f);
+    ASSERT_FLOAT_EQ(*out.at<float>(0,1), 3.f);
+    ASSERT_FLOAT_EQ(*out.at<float>(1,0), 0.75f);
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 3.f);
 }
 
 

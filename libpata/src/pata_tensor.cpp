@@ -162,6 +162,8 @@ void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_vie
 CommandPtr TensorImpl::getWaitIfNotReady()
 {    
     std::lock_guard<std::mutex> guard(_signal_mutex);
+    // todo(galstar): return a list of waits that are not ready according to the functionality 
+    // that is in mark_not_ready().
     if (_signal && !_signal->is_ready())
     {
         return _signal->getWaitCmd();

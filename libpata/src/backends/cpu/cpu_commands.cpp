@@ -132,7 +132,7 @@ void CPUMatMulCmd::execute(Stream *in_stream)
     auto inA = _inputs[0];
     auto inB = _inputs[1];
     auto out = _outputs[0];
-
+    
     libxsmm_blasint a_rows = inA.shape(0);
     libxsmm_blasint common = inA.shape(1);
     libxsmm_blasint b_rows = inB.shape(0);
@@ -140,18 +140,16 @@ void CPUMatMulCmd::execute(Stream *in_stream)
     libxsmm_blasint rows = out.shape(0);
     libxsmm_blasint cols = out.shape(1);
     float alpha = 1.f;
-    float beta = 0.f;
+    float beta = 1.f;
     libxsmm_blasint lda = inA.shape(0);
     libxsmm_blasint ldb = inB.shape(0);
     libxsmm_blasint ldc = out.shape(0);
     
     if (cols == b_cols && rows == a_rows) // no output split in this case
     {   
-        std::cout << "Starting Matrix Multuiply JIT\n";
-        libxsmm_mmfunction<float> xmm(LIBXSMM_MELTW_FLAG_FUSE_NONE, 
-                                        rows, cols, common, //m,n,k
-                                        lda,ldb, ldc, 1);
-        std::cout << "Starting Matrix Multuiply\n";
+        std::cout << "Starting Matrix Multiply JIT\n";
+        libxsmm_mmfunction<float> xmm(LIBXSMM_GEMM_FLAG_NONE, rows, cols, common, 1.0 /*alpha*/, 1.0 /*beta*/);
+
         xmm((float*)inA.base_addr(), (float*)inB.base_addr(), (float*)out.base_addr());
         /*
         libxsmm_sgemm(nullptr, nullptr, 
@@ -160,6 +158,6 @@ void CPUMatMulCmd::execute(Stream *in_stream)
                         inB.at<float>(0,0), &ldb, &beta, 
                         out.at<float>(0,0), &ldc);
         */
-        std::cout << "Finished Matrix Multuiply\n";
+        std::cout << "Finished Matrix Multiply\n";
     }
 }
