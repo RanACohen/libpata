@@ -1,3 +1,4 @@
+#include <iomanip>
 #include "pata_debug.h"
 
 struct dead_lock_debug_item {
@@ -10,7 +11,51 @@ struct dead_lock_debug_item {
 #define DEADLOCK_LOG_SIZE 65536
 dead_lock_debug_item dead_lock_debug_info[DEADLOCK_LOG_SIZE];
 std::atomic<size_t> deadlock_put_index(0);
-std::chrono::high_resolution_clock::time_point boot_time = std::chrono::high_resolution_clock::now();
+StopWatch system_watch;
+
+std::ostream &LOG()
+{
+    return std::cout << "[" << system_watch << "] ";
+}
+
+std::ostream& operator<<(std::ostream& os, const StopWatch& watch)
+{
+    auto usec = watch.leap_usec();
+    auto mSec = usec/1000;
+    if (mSec==0)
+        return os << usec << " uSec";
+    usec -= mSec*1000;
+    auto sec = mSec /1000;
+    if (sec==0)
+        return os << mSec  << "." << std::setfill('0') << std::setw(3) << usec << " mSec";
+    mSec -= sec*1000;
+    auto min = sec/60;
+    if (min==0)
+        return os << sec << "." << std::setfill('0') << std::setw(3) << mSec  << "," << std::setfill('0') << std::setw(3) << usec << " sec";
+    sec -= min*60;
+    auto hour = min/60;
+    if (hour==0)
+        return os << min << ":" 
+                << std::setfill('0') << std::setw(2) << sec << "." 
+                << std::setfill('0') << std::setw(3) << mSec  << "," 
+                << std::setfill('0') << std::setw(3) << usec << " min";
+    min -= hour*60;
+    auto days = hour/24;
+    if (days==0)
+        return os << hour << ":" 
+                << std::setfill('0') << std::setw(2) << min << ":" 
+                << std::setfill('0') << std::setw(2) << sec << "." 
+                << std::setfill('0') << std::setw(3) << mSec  << "," 
+                << std::setfill('0') << std::setw(3) << usec;
+    hour -= days*24;
+    return os << days << "d " 
+            << std::setfill('0') << std::setw(2) << hour << ":" 
+            << std::setfill('0') << std::setw(2) << min << ":" 
+            << std::setfill('0') << std::setw(2) << sec << "." 
+            << std::setfill('0') << std::setw(3) << mSec  << "," 
+            << std::setfill('0') << std::setw(3) << usec;
+
+}
 
 void deadlock_debug_reset()
 {
@@ -45,7 +90,7 @@ void dump_dead_lock()
     for (unsigned i=0; i<last; i++)
     {        
         auto &item = dead_lock_debug_info[i];
-        auto period =  std::chrono::duration_cast<std::chrono::microseconds>(item.log_time-boot_time).count();
+        auto period =  system_watch.leap_usec();
         if (item.event == EventType::WAIT_WOKE_UP)
         {
             std::cout << "[" << i << "] " << period << ": stream #" << item.wait_str_id << " woke up from signal " << item.cmd_id << std::endl;

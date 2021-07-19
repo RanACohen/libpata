@@ -118,7 +118,16 @@ namespace libpata
                         PATA_ASSERT(cpu_cmd && "not a CPU command!");
                         //std::cout << "Executing cmd... on stream " << id() << "\n";
                         log_dead_lock(id(), cpu_cmd->id(), -1, EventType::CMD_POP);
+                        //StopWatch timer;
                         cpu_cmd->execute(this);                        
+                        /*
+                        timer.stop();
+                        auto cmp_cmd = std::dynamic_pointer_cast<ComputeCmd>(cmd);
+                        if (cmp_cmd)
+                        {
+                            LOG() << "Stream " << id() << " executed " << cmp_cmd->name() << " in " << timer << "\n";
+                        }
+                        */
                         cmd->sched_in_stream = nullptr;
                     }
                     //std::cout << "Stream " << id() << " queue Idle... \n";

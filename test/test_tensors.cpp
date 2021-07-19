@@ -3,6 +3,7 @@
 #include <memory>
 #include <cassert>
 
+#include "pata_debug.h"
 #include "pata_utils.h"
 #include "pata_tensor.h"
 #include "pata_operator.h"
@@ -93,6 +94,24 @@ TEST(UtilsTests, TestNonTensorOverlapInterleaved) {
     ASSERT_FALSE(t.is_ready());
 }
 
+TEST(UtilsTests, TestStopWatch) {
+    StopWatch timer;
+    timer.stop();
+    timer.stop_time = 123;
+    LOG() << timer << "\n";
+    timer.stop_time = 1123;
+    LOG() << timer << "\n";
+    timer.stop_time = 63123;
+    LOG() << timer << "\n";
+    timer.stop_time = 63123123;
+    LOG() << timer << "\n";
+    timer.stop_time = 3663123111;
+    LOG() << timer << "\n";
+    timer.stop_time = 243663123654;
+    LOG() << timer << "\n";
+
+}
+
 TEST(TensorPerformanceTests, TestTimeMeasure) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
@@ -117,11 +136,13 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     ASSERT_FLOAT_EQ(*s2.at<float>(1,1), (1+s2.shape()[1]*(1+s1.shape()[0]))*0.25);
     Tensor x = s1;
     EXPECT_EQ(s1.shape(), s2.shape());
+    StopWatch timer;
     for (unsigned i=0; i<100; i++)
     {
         x = x + s2;
     }
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6579472.0f);
+    std::cout << "Operation took " << timer << "\n";
     BackendManager::Inst().backend()->wait_for_all();
 }
 

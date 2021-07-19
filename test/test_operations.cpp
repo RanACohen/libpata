@@ -3,13 +3,14 @@
 #include <memory>
 #include <cassert>
 
+#include "pata_debug.h"
 #include "pata_utils.h"
 #include "pata_tensor.h"
 #include "pata_operator.h"
 #include "pata_backend.h"
 
 using namespace libpata;
-
+std::ostream &LOG();
 TEST(TensorOperationTests, TestReluN) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
@@ -40,20 +41,52 @@ TEST(TensorOperationTests, TestAdd1) {
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6.7f);
     BackendManager::Inst().backend()->wait_for_all();
 }
+#define COL_SIZE 16384
+#define ROWS  1024
 
 TEST(TensorOperationTests, TestParallelAdd2D) {
-    auto ws = std::make_shared<Workspace>(1000000);
-    Tensor a({20, 30}, FLOAT, ws);
-    a.fill(2.0f);
-    Tensor b({20, 30}, FLOAT, ws);
-    b.fill(2.0f);
-    Tensor out({20, 30}, FLOAT, ws);
-    out.fill(0.f);
-    TensorsList out_tiles;
     
-    Add2D(a, b, out, out_tiles);
+    auto ws = std::make_shared<Workspace>(COL_SIZE*ROWS*4*4);
+    Tensor a({ROWS, COL_SIZE}, FLOAT, ws);
+    a.fill(2.0f);
+    Tensor b({ROWS, COL_SIZE}, FLOAT, ws);
+    b.fill(2.0f);
+    Tensor out({ROWS, COL_SIZE}, FLOAT, ws);    
+    TensorsList out_tiles;
+    //warm up
+    StopWatch timer;
+    Add2D(a, b, out, out_tiles, 64);
+    ASSERT_EQ(out_tiles.size(), ROWS/64);
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
+    std::cout << "Parallel Operation took " << timer << "\n";
+    out_tiles.clear();
+    timer.start();
+    Add2D(a, b, out, out_tiles, 64);
+    ASSERT_EQ(out_tiles.size(), ROWS/64);
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
+    auto par_dur = timer.leap_usec();
+    std::cout << "Parallel Operation took " << timer << "\n";
+    timer.start();
+    Add2D(a, b, out, out_tiles, ROWS);
+    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
+    auto ser_dur = timer.leap_usec();
+    std::cout << "Serial Operation took " << timer << "\n";
+    std::cout << "Parallel boosting factor " << (float)ser_dur/par_dur << "\n";
     BackendManager::Inst().backend()->wait_for_all();
 
+}
+
+TEST(TensorOperationTests, TestSerialAdd2D) {
+    auto ws = std::make_shared<Workspace>(COL_SIZE*ROWS*4*4);
+    Tensor a({ROWS, COL_SIZE}, FLOAT, ws);
+    a.fill(2.0f);
+    Tensor b({ROWS, COL_SIZE}, FLOAT, ws);
+    b.fill(2.0f);
+    TensorsList out_tiles;
+    StopWatch timer;
+    auto out = a+b;    
+    BackendManager::Inst().backend()->wait_for_all();
+    std::cout << "Operation took " << timer << "\n";
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
 }
 
