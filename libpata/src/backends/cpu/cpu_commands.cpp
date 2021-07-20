@@ -12,9 +12,11 @@ using namespace libpata::impl;
 
 void CPUWait::execute(Stream *in_stream)
 {
-    Signal *ps = _wait_on.get();
-    auto sig = dynamic_cast<CPUSignal *>(ps);
-    sig->wait(in_stream);
+    for (auto &ps : _wait_on)
+    {
+        auto sig = std::dynamic_pointer_cast<CPUSignal>(ps);
+        sig->wait(in_stream);
+    }
 }
 
 CPUCommand::CPUCommand()
@@ -43,11 +45,6 @@ void CPUSignal::execute(Stream *in_stream)
     log_dead_lock(in_stream->id(), id(), -1, EventType::SIGNAL_ON);
     signal();
     _cv.notify_all();
-}
-
-std::shared_ptr<Wait> CPUSignal::getWaitCmd()
-{
-    return std::make_shared<CPUWait>(std::dynamic_pointer_cast<Signal>(shared_from_this()));
 }
 
 void TestCommand::execute(Stream *in_stream)

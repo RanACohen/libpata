@@ -57,7 +57,7 @@ TEST(UtilsTests, TestListRef) {
     std::shared_ptr<TensorImpl> t(new TensorImpl({10, 20, 30}, FLOAT, ws));
     refernces.emplace_back(&a_list, t);
     refernces.clear();
-    EXPECT_TRUE(a_list.empty());    
+    EXPECT_TRUE(a_list.empty());
 }
 
 TEST(UtilsTests, TestTensorOverlap) {
@@ -99,17 +99,16 @@ TEST(UtilsTests, TestStopWatch) {
     timer.stop();
     timer.stop_time = 123;
     LOG() << timer << "\n";
-    timer.stop_time = 1123;
+    timer.stop_time = 1023;
     LOG() << timer << "\n";
-    timer.stop_time = 63123;
+    timer.stop_time = 6302301;
     LOG() << timer << "\n";
-    timer.stop_time = 63123123;
+    timer.stop_time = 63003023;
     LOG() << timer << "\n";
     timer.stop_time = 3663123111;
     LOG() << timer << "\n";
     timer.stop_time = 243663123654;
     LOG() << timer << "\n";
-
 }
 
 TEST(TensorPerformanceTests, TestTimeMeasure) {

@@ -44,37 +44,6 @@ TEST(TensorOperationTests, TestAdd1) {
 #define COL_SIZE 16384
 #define ROWS  1024
 
-TEST(TensorOperationTests, TestParallelAdd2D) {
-    
-    auto ws = std::make_shared<Workspace>(COL_SIZE*ROWS*4*4);
-    Tensor a({ROWS, COL_SIZE}, FLOAT, ws);
-    a.fill(2.0f);
-    Tensor b({ROWS, COL_SIZE}, FLOAT, ws);
-    b.fill(2.0f);
-    Tensor out({ROWS, COL_SIZE}, FLOAT, ws);    
-    TensorsList out_tiles;
-    //warm up
-    StopWatch timer;
-    Add2D(a, b, out, out_tiles, 64);
-    ASSERT_EQ(out_tiles.size(), ROWS/64);
-    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
-    std::cout << "Parallel Operation took " << timer << "\n";
-    out_tiles.clear();
-    timer.start();
-    Add2D(a, b, out, out_tiles, 64);
-    ASSERT_EQ(out_tiles.size(), ROWS/64);
-    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
-    auto par_dur = timer.leap_usec();
-    std::cout << "Parallel Operation took " << timer << "\n";
-    timer.start();
-    Add2D(a, b, out, out_tiles, ROWS);
-    ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
-    auto ser_dur = timer.leap_usec();
-    std::cout << "Serial Operation took " << timer << "\n";
-    std::cout << "Parallel boosting factor " << (float)ser_dur/par_dur << "\n";
-    BackendManager::Inst().backend()->wait_for_all();
-
-}
 
 TEST(TensorOperationTests, TestSerialAdd2D) {
     auto ws = std::make_shared<Workspace>(COL_SIZE*ROWS*4*4);

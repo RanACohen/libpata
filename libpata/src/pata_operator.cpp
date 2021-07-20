@@ -17,9 +17,9 @@ void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
     {
         /* Since this command have input tensors that are not ready yet,
            we need to add dependecy "wait" for the current command. */ 
-        CommandPtr wait = in.getWaitIfNotReady();
-        if (wait)
-        {                        
+        auto wait = in.getWaitIfNotReady();
+        if (!wait->is_empty())
+        {
             stream->push(wait);
         }
     }

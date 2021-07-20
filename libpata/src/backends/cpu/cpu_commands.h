@@ -47,13 +47,12 @@ namespace libpata
             CPUSignal() {}
             void wait(Stream *wait_in_stream);
             virtual void execute(Stream *in_stream);
-            virtual std::shared_ptr<Wait> getWaitCmd();
         };
 
         class CPUWait : virtual public Wait, CPUCommand
         {
         public:
-            CPUWait(const std::shared_ptr<Signal> &wait_on) : Wait(wait_on) {}
+            CPUWait() = default;
             virtual void execute(Stream *in_stream);
         };
 

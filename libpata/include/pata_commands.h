@@ -6,6 +6,7 @@
 #define LIBPATA_PATA_COMMAND_H
 #include <memory>
 #include <mutex>
+#include <vector>
 #include <condition_variable>
 #include <atomic>
 
@@ -28,19 +29,20 @@ namespace libpata {
             Signal() = default;
             virtual ~Signal()=0; // mark trhis abstract, must inherit!
             
-            virtual std::shared_ptr<Wait> getWaitCmd() = 0;
             inline void signal() { _ready = true;}
             inline bool is_ready() { return _ready; }
-
     };
+    typedef std::shared_ptr<Signal> SignalPtr;
+    typedef std::vector<SignalPtr> SignalList;
 
     class Wait: public virtual Command {
         public:
-            Wait(const std::shared_ptr<Signal>& wait_on):_wait_on(wait_on){}
+            Wait() = default;
+            void add_signal(const SignalPtr &signal) { _wait_on.push_back(signal);}
             virtual ~Wait()=0; // abstract, must inherit
+            bool is_empty() const { return _wait_on.empty(); }
         protected:
-            std::shared_ptr<Signal> _wait_on;
-
+            SignalList _wait_on;
     };
 };
 

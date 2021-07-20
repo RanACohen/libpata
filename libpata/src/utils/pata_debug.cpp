@@ -1,4 +1,4 @@
-#include <iomanip>
+#include <memory>
 #include "pata_debug.h"
 
 struct dead_lock_debug_item {
@@ -18,6 +18,17 @@ std::ostream &LOG()
     return std::cout << "[" << system_watch << "] ";
 }
 
+template<typename ... Args>
+std::string string_format( const std::string& format, Args ... args )
+{
+    int size_s = std::snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
+    if( size_s <= 0 ){ throw std::runtime_error( "Error during formatting." ); }
+    auto size = static_cast<size_t>( size_s );
+    auto buf = std::make_unique<char[]>( size );
+    std::snprintf( buf.get(), size, format.c_str(), args ... );
+    return std::string( buf.get(), buf.get() + size - 1 ); // We don't want the '\0' inside
+}
+
 std::ostream& operator<<(std::ostream& os, const StopWatch& watch)
 {
     auto usec = watch.leap_usec();
@@ -27,34 +38,22 @@ std::ostream& operator<<(std::ostream& os, const StopWatch& watch)
     usec -= mSec*1000;
     auto sec = mSec /1000;
     if (sec==0)
-        return os << mSec  << "." << std::setfill('0') << std::setw(3) << usec << " mSec";
+        return os << string_format("%d.%03d mSec", mSec, usec);
     mSec -= sec*1000;
     auto min = sec/60;
+    usec += mSec*1000;
     if (min==0)
-        return os << sec << "." << std::setfill('0') << std::setw(3) << mSec  << "," << std::setfill('0') << std::setw(3) << usec << " sec";
+        return os << string_format("%d.%06d sec", sec, usec);
     sec -= min*60;
     auto hour = min/60;
     if (hour==0)
-        return os << min << ":" 
-                << std::setfill('0') << std::setw(2) << sec << "." 
-                << std::setfill('0') << std::setw(3) << mSec  << "," 
-                << std::setfill('0') << std::setw(3) << usec << " min";
+        return os << string_format("%d:%02d.%06d min", min, sec, usec);
     min -= hour*60;
     auto days = hour/24;
     if (days==0)
-        return os << hour << ":" 
-                << std::setfill('0') << std::setw(2) << min << ":" 
-                << std::setfill('0') << std::setw(2) << sec << "." 
-                << std::setfill('0') << std::setw(3) << mSec  << "," 
-                << std::setfill('0') << std::setw(3) << usec;
+        return os << string_format("%d:%02d:%02d.%06d hours", hour, min, sec, usec);
     hour -= days*24;
-    return os << days << "d " 
-            << std::setfill('0') << std::setw(2) << hour << ":" 
-            << std::setfill('0') << std::setw(2) << min << ":" 
-            << std::setfill('0') << std::setw(2) << sec << "." 
-            << std::setfill('0') << std::setw(3) << mSec  << "," 
-            << std::setfill('0') << std::setw(3) << usec;
-
+    return os << string_format("%dd + %d:%02d:%02d.%06d", days, hour, min, sec, usec);
 }
 
 void deadlock_debug_reset()

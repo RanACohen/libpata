@@ -119,29 +119,35 @@ void TensorImpl::remove_overlap(TensorImpl *peer)
 
 void TensorImpl::mark_not_ready()
 {
-    if (_signal)
-    {
-        std::cout << "Signal already exists, no need to reset it.\n";
-        return; 
-    }
-    set_signal(BackendManager::Inst().backend()->createSignal());
+    _signal = BackendManager::Inst().backend()->createSignal();
 }
 
-void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_view, bool from_peer)
+
+std::shared_ptr<Wait> TensorImpl::getWaitIfNotReady()
+{        
+    auto wait = BackendManager::Inst().backend()->createWait();
+    get_wait_list(wait);
+    return wait;
+}
+
+void TensorImpl::get_wait_list(std::shared_ptr<Wait> &wait_list, bool from_view, bool from_peer)
 {
-    _signal = signal;    
+    if (_signal && !_signal->is_ready())
+    {
+        wait_list->add_signal(_signal);
+    }
     
     if (!from_peer)
     {
         if (_view_base) // if I am a view and not ready, so is my base not ready
-            _view_base->set_signal(signal, true, false);
+            _view_base->get_wait_list(wait_list, true, false);
 
         for (const auto &v : _overlap_tensors)
         {
             auto vi = v.lock();
             if (!vi)
                 continue;
-            vi->set_signal(signal, false, true); // can propaget up but no do the base
+            vi->get_wait_list(wait_list, false, true); // can propagate up but not to the base
         }
     }
 
@@ -155,20 +161,9 @@ void TensorImpl::set_signal(const std::shared_ptr<Signal> &signal, bool from_vie
         auto vi = v.lock();
         if (!vi)
             continue;
-        vi->set_signal(signal);
-    }   
-}
-
-CommandPtr TensorImpl::getWaitIfNotReady()
-{    
-    std::lock_guard<std::mutex> guard(_signal_mutex);
-    // todo(galstar): return a list of waits that are not ready according to the functionality 
-    // that is in mark_not_ready().
-    if (_signal && !_signal->is_ready())
-    {
-        return _signal->getWaitCmd();
-    }
-    return CommandPtr();
+        vi->get_wait_list(wait_list);
+    }       
+    return;
 }
 
 size_t TensorImpl::get_pos_offset(const Shape &pos) const
@@ -187,7 +182,7 @@ size_t TensorImpl::get_pos_offset(const Shape &pos) const
 }
 void TensorImpl::sync() {
     auto wait = getWaitIfNotReady();
-    if (!wait) return;
+    if (wait->is_empty()) return;
     auto str = BackendManager::Inst().backend()->createStream();
     str->push(wait);
     str->wait_for_idle();
@@ -311,12 +306,12 @@ Tensor Tensor::operator+(const Tensor &rhs)
     // todo: Can I send my own object? Or maybe copy? does it make sense?
     auto cmd = BackendManager::Inst().backend()->AddCmd(*this, rhs, out_tensor);
     auto stream = BackendManager::Inst().backend()->createStream();
-    CommandPtr wait = getWaitIfNotReady();
-    if (wait) {                        
+    std::shared_ptr<Wait> wait = getWaitIfNotReady();
+    if (!wait->is_empty()) {                        
         stream->push(wait);
     }
     wait = rhs.getWaitIfNotReady();
-    if (wait)  {                        
+    if (!wait->is_empty()) {
         stream->push(wait);
     }
     out_tensor.mark_not_ready();

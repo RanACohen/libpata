@@ -45,6 +45,11 @@ std::shared_ptr<Signal> CPUBackend::createSignal()
     return std::make_shared<CPUSignal>();
 }
 
+std::shared_ptr<Wait> CPUBackend::createWait()
+{
+    return std::make_shared<CPUWait>();
+}
+
 CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)
 {
     return std::make_shared<TestCommand>(variable, test_val, sleep_ms);
