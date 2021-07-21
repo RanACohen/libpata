@@ -136,11 +136,12 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     Tensor x = s1;
     EXPECT_EQ(s1.shape(), s2.shape());
     StopWatch timer;
-    for (unsigned i=0; i<100; i++)
+    for (unsigned i=0; i<1000; i++)
     {
-        x = x + s2;
+        Add(x, s2, x);
     }
-    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6579472.0f);
+    std::cout << "Scheudling took " << timer << "\n";
+    ASSERT_FLOAT_EQ(*x.at<float>(1,1), 65792272.0f);
     std::cout << "Operation took " << timer << "\n";
     BackendManager::Inst().backend()->wait_for_all();
 }

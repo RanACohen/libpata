@@ -90,6 +90,14 @@ namespace libpata {
      * */
     void Add2D(Tensor& inA, Tensor& inB, Tensor& out, TensorsList &outViews, int block_size=10); 
 
+    /**
+     * Add2D: does parallel Add operation of out=A+B, 
+     * inA - Input A Tesnor
+     * inB - Input B Tesnor
+     * out - output Tesnor (already allocated) of smae size as inputs     
+     * */
+    void Add(const Tensor& inA, const Tensor& inB, Tensor& out); 
+
     bool test_Libxsmm(const Tensor& inA, const Tensor& inB, Tensor& out);
 };
 

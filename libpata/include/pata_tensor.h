@@ -58,11 +58,11 @@ namespace libpata {
         inline size_t volume() const { return _impl->volume(); }
 
         inline void mark_not_ready() { _impl->mark_not_ready();}
-        inline bool is_ready() { return getWaitIfNotReady()->is_empty(); }
+        inline bool is_ready() { return _impl->is_ready(); }
         inline void sync() const { return _impl->sync(); }
         inline bool is_contiguous() const { return _impl->is_contiguous(); }
 
-        inline std::shared_ptr<Wait> getWaitIfNotReady() const { return _impl->getWaitIfNotReady(); }
+        inline void getWaitList(const std::shared_ptr<Wait>& wait) const { return _impl->get_wait_list(wait); }
         inline CommandPtr get_signal_cmd() { return _impl->_signal; }
 
         template<typename T>

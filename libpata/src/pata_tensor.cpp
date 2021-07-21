@@ -130,7 +130,43 @@ std::shared_ptr<Wait> TensorImpl::getWaitIfNotReady()
     return wait;
 }
 
-void TensorImpl::get_wait_list(std::shared_ptr<Wait> &wait_list, bool from_view, bool from_peer)
+bool TensorImpl::is_ready(bool check_peers, bool check_views, bool check_base)
+{
+    if (_signal && !_signal->is_ready())
+        return false;
+
+    if (check_base && _view_base) // if I am a view and base is not ready , so am I. but no need to check base views, I am checking overlaps
+        if (!_view_base->is_ready(true, false, true)) 
+            return false;
+
+    if (check_peers)
+    {
+        // if any overlap is not read, so am I
+        for (const auto &v : _overlap_tensors)
+        {
+            auto vi = v.lock();
+            if (!vi)
+                continue;
+            if (!vi->is_ready(false, true, false)) // peer views might overlap
+                return false; 
+        }
+    }
+
+    // If any of my views is not ready, so am I
+    if (!check_views)
+        return true;
+    for (const auto &v : _views)
+    {
+        auto vi = v.lock();
+        if (!vi)
+            continue;
+        if (!vi->is_ready(false, true, false)) // dont check base (infinite loop) and dont check peers
+            return false;
+    }       
+    return true;
+}
+
+void TensorImpl::get_wait_list(const std::shared_ptr<Wait> &wait_list, bool from_view, bool from_peer)
 {
     if (_signal && !_signal->is_ready())
     {
@@ -304,18 +340,6 @@ Tensor Tensor::operator+(const Tensor &rhs)
     auto out_tensor = Tensor(shape(), dtype(), workspace());
 
     // todo: Can I send my own object? Or maybe copy? does it make sense?
-    auto cmd = BackendManager::Inst().backend()->AddCmd(*this, rhs, out_tensor);
-    auto stream = BackendManager::Inst().backend()->createStream();
-    std::shared_ptr<Wait> wait = getWaitIfNotReady();
-    if (!wait->is_empty()) {                        
-        stream->push(wait);
-    }
-    wait = rhs.getWaitIfNotReady();
-    if (!wait->is_empty()) {
-        stream->push(wait);
-    }
-    out_tensor.mark_not_ready();
-    stream->push(cmd);
-    stream->push(out_tensor.get_signal_cmd());
+    Add(*this, rhs, out_tensor);
     return out_tensor;
 }

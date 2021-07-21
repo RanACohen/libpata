@@ -13,15 +13,17 @@ void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
     auto manager = BackendManager::Inst();
     auto stream = manager.backend()->createStream();
+    auto wait = manager.backend()->createWait();
     for (auto in : cmd->inputs())
     {
         /* Since this command have input tensors that are not ready yet,
            we need to add dependecy "wait" for the current command. */ 
-        auto wait = in.getWaitIfNotReady();
-        if (!wait->is_empty())
-        {
-            stream->push(wait);
-        }
+        
+        in.getWaitList(wait);
+    }
+    if (!wait->is_empty())
+    {
+        stream->push(wait);
     }
 
     for (auto out: cmd->outputs())
@@ -109,6 +111,11 @@ void libpata::Add2D(Tensor& inA, Tensor& inB, Tensor& out, TensorsList &outViews
         outViews.push_back(tv);
         schedule(BackendManager::Inst().backend()->AddCmd(inA_view, inB_view, tv));
     }
+}
+
+void libpata::Add(const Tensor& inA, const Tensor& inB, Tensor& out)
+{
+    schedule(BackendManager::Inst().backend()->AddCmd(inA, inB, out));    
 }
 
 bool libpata::test_Libxsmm(const Tensor& a, const Tensor& b, Tensor& out)
