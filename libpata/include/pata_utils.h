@@ -21,19 +21,7 @@ namespace libpata
     template <typename T>
     struct WeakListReference
     {
-        typename std::list<std::weak_ptr<T>> *_list;
         typename std::list<std::weak_ptr<T>>::iterator _item;
-
-        WeakListReference(std::list<std::weak_ptr<T>> *list, const std::shared_ptr<T> &item) : _list(list) 
-        {
-            _item = list->insert(list->begin(), item);
-        }
-
-        ~WeakListReference() { 
-            _list->erase(_item); 
-            _item = _list->end();
-            _list = nullptr;
-        }
     };
 
 } // namespace libpata

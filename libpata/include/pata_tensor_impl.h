@@ -8,12 +8,13 @@
 #define LIBPATA_PATA_TENSOR_IMPL_H
 #include <list>
 #include <memory>
+#include <mutex>
 
 #include "pata_types.h"
 #include "pata_memory.h"
+#include "pata_commands.h"
 #include "pata_errors.h"
 #include "pata_utils.h"
-#include "pata_stream.h"
 
 namespace libpata {    
     /**
@@ -46,16 +47,14 @@ namespace libpata {
         }
 
         TensorPtr subrange(const TensorRange &tr){        
-            TensorPtr me = shared_from_this();
-            auto ret = std::make_shared<TensorImpl>(me, tr);
-            register_as_view(ret);
-            return ret;
+            auto my_view = std::make_shared<TensorImpl>(shared_from_this(), tr);
+            register_view(my_view);
+            return my_view;
         }
 
         bool is_view_overlap(const TensorPtr &sibling_view);
 
         size_t get_pos_offset(const Shape &pos) const; // in elements units
-        std::shared_ptr<Wait> getWaitIfNotReady();
         void get_wait_list(const std::shared_ptr<Wait> &wait_list, bool from_view=false, bool from_peer=false);
         bool is_ready(bool check_peers=true, bool check_views=true, bool check_base=true);
         void mark_not_ready();
@@ -93,19 +92,20 @@ namespace libpata {
         
         TensorPtr _view_base;
         WaekTensorList _overlap_tensors;
-        WaekTensorList _views;        
-        std::list<WeakListReference<TensorImpl>> _my_refernces;
+        WaekTensorList _views;
+        std::mutex  _overlap_guard;
+        std::mutex  _views_guard;
+        WeakListReference<TensorImpl> _my_refernces_to_base;
         std::shared_ptr<Signal> _signal;
 
         size_t _base_offset=0;
         MemoryBlockPtr  _memory;
 
+        void register_overlap(const TensorPtr &view);
         void remove_overlap(TensorImpl *peer);
-        void register_as_view(const TensorPtr &view);
-        void add_me_to(WaekTensorList &list)
-        {
-            _my_refernces.emplace_back(&list, shared_from_this());
-        }
+        
+        void register_view(const TensorPtr &view);
+        void remove_view(const WeakListReference<TensorImpl> &ref);
     };
 }
 #endif //LIBPATA_PATA_TENSOR_H

@@ -4,40 +4,30 @@
 #include "pata_debug.h"
 #include "pata_tensor.h"
 #include "pata_operator.h"
-#include "pata_stream.h"
 #include "pata_backend.h"
 
 using namespace libpata;
 // Demonstrate some basic assertions.
 
-TEST(ParallelTests, WaitAllTest) {
+TEST(ParallelTests, TestAsyncBasic) {
     auto ws = std::make_shared<Workspace>(1000000);        
     auto backend = BackendManager::Inst().backend();
     int v=0;
 
-    auto str = backend->createStream();
-    auto cmd = backend->createTestCmd(&v, 8, 30);
-    
-    str->push(cmd);
-    backend->wait_for_all();
-
-    ASSERT_EQ(v, 8);
-}
-
-TEST(ParallelTests, PushStreamsTest) {
-    auto backend = BackendManager::Inst().backend();
-    auto ws = std::make_shared<Workspace>(1000000);        
-    auto str = backend->createStream();
-    int v=0;
-
-    auto cmd = backend->createTestCmd(&v, 8, 30);
+    auto cmd = backend->createTestCmd(&v, 8, 300);
     auto sig = backend->createSignal();
-    str->push(cmd);
-    str->push(sig);
-    str->wait_for_idle();
+    cmd->add_signal(sig); // the signal to set when test is ready
+    auto barrier = backend->createBarrierCmd();
+    barrier->wait_on_signal(sig); // the signal to wait for     
     
+    auto wcmd = backend->createWait(cmd); // run cmd when wait is ready
+    LOG() << "Before schedule\n";
+    backend->schedule(wcmd);
+    LOG() << "After schedule\n";
+    ASSERT_EQ(v, 0);
+    barrier->wait();
+    LOG() << "After barrier sync\n";
     ASSERT_EQ(v, 8);
-    backend->wait_for_all();
 }
 
 // todo: add signal testing + view signal
@@ -64,13 +54,16 @@ TEST(ParallelTests, TestParallelAdd2DBoost) {
     timer.stop();
     out_tiles.clear();
     std::cout << "Parallel Operation took " << timer << "\n";
+    out.fill(0.0f);
     timer.start();
     Add2D(a, b, out, out_tiles, ROWS/NTHREADS);
     ASSERT_EQ(out_tiles.size(), NTHREADS);
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
     timer.stop();
+    out_tiles.clear();
     auto par_dur = timer.leap_usec();
     std::cout << "Parallel Operation took " << timer << "\n";
+    out.fill(0.0f);
     timer.start();
     Add2D(a, b, out, out_tiles, ROWS);
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
@@ -97,7 +90,7 @@ TEST(ParallelTests, TestParallelAdd2DSync) {
     Add2D(a, b, out, out_tiles, ROWS/NTHREADS);
     ASSERT_EQ(out_tiles.size(), NTHREADS);
     auto x = a+out;
+    std::cout << "Done add " << timer << "\n";   
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 6.0f);
-    std::cout << "Test Operation took " << timer << "\n";
-    BackendManager::Inst().backend()->wait_for_all();
+    std::cout << "Test Operation took " << timer << "\n";   
 }

@@ -13,60 +13,48 @@
 #include <chrono>
 
 #include "pata_tensor.h"
-#include "pata_stream.h"
 
 using namespace std;
 
 namespace libpata {   
     typedef std::vector<std::chrono::microseconds> ScheduleTimeMeasurement;
     extern ScheduleTimeMeasurement schedule_time_map;
- 
-    class Attr {
-        public:
-            explicit Attr(DType dtype, std::string name) : _dtype(dtype), _name(name) {}
-        private: 
-            DType _dtype;
-            std::string _name;
-    };
+     
     class Tensor;
 
     typedef std::vector<Tensor> TensorsList;
-    typedef std::vector<Attr> AttrList; 
-
-    class ComputeCmd: virtual public Command {
+ 
+    class ComputeCmd: public Command {
         public:
             //ComputeCmd(const std::string &name): _name(name) {}
             ComputeCmd(const std::string &name, 
                     const TensorsList &in,
-                    const TensorsList &out, 
-                    const AttrList &attr):
-                _name(name),
+                    const TensorsList &out): 
+                Command(name),
                 _inputs (in), 
-                _outputs(out),
-                _attributes(attr) {}
+                _outputs(out)
+                {
+                    for (auto o: out) {
+                        o.mark_not_ready();
+                        auto sig = o.get_signal_cmd();                        
+                        add_signal(sig);
+                    } 
+                }
                      
             
-            inline const std::string &name() { return _name; }
+            inline const std::string &name() { return _cmd_name; }
             TensorsList &outputs() { return _outputs;}
             const TensorsList &inputs() const { return _inputs;}
 
-        protected:
-            std::string _name;
+        protected:           
+            //std::string _name;
             TensorsList _inputs;
-            TensorsList _outputs;
-            AttrList _attributes; 
+            TensorsList _outputs;            
     };    
     typedef std::shared_ptr<ComputeCmd> ComputeCmdPtr;
     
     void schedule(const ComputeCmdPtr &cmd);
-    
-    class KernelFunction
-    {
-    public:
-        KernelFunction(const std::string &code);
-        KernelFunction(const char *code);
-    };
-    
+
 
     Tensor reluN(const Tensor& in);
     Tensor abs(const Tensor& in);

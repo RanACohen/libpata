@@ -8,7 +8,6 @@
 #include <memory>
 #include <condition_variable>
 
-#include "pata_stream.h"
 #include "pata_commands.h"
 #include "pata_operator.h"
 
@@ -17,14 +16,14 @@ namespace libpata {
         public:
         virtual ~Backend() = default;
 
-        virtual StreamPtr createStream() = 0;
-        virtual int get_number_of_active_streams() = 0;
         virtual void wait_for_all() = 0;
 
         virtual SignalPtr createSignal() = 0;
-        virtual std::shared_ptr<Wait> createWait() = 0;
+        virtual std::shared_ptr<Wait> createWait(const CommandPtr&cmd) = 0;
+        virtual std::shared_ptr<Barrier> createBarrierCmd() = 0;
+        virtual void schedule(const std::shared_ptr<Wait>&wait_cmd, bool run_sync=false) = 0;
 
-        virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs, const AttrList &attributes) = 0;
+        virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs) = 0;
         virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms=0) = 0;
 
         virtual ComputeCmdPtr AddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output) = 0;

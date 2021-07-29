@@ -1,4 +1,5 @@
 #include <memory>
+#include <thread>
 #include "pata_debug.h"
 
 struct dead_lock_debug_item {
@@ -13,9 +14,17 @@ dead_lock_debug_item dead_lock_debug_info[DEADLOCK_LOG_SIZE];
 std::atomic<size_t> deadlock_put_index(0);
 StopWatch system_watch;
 
+thread_local unsigned int thread_local_id = 0; 
+
+void set_local_thread_id(unsigned id)
+{
+    thread_local_id = id;
+}
+
 std::ostream &LOG()
 {
-    return std::cout << "[" << system_watch << "] ";
+    
+    return std::cout << "[" << thread_local_id <<" @" << system_watch << "] ";
 }
 
 template<typename ... Args>

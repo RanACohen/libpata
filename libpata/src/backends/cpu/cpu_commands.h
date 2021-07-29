@@ -4,6 +4,7 @@
 #pragma once
 #ifndef LIBPATA_PATA_CPU_COMMANDS_H
 #define LIBPATA_PATA_CPU_COMMANDS_H
+#include <condition_variable>
 
 #include "pata_commands.h"
 #include "pata_operator.h"
@@ -12,78 +13,89 @@ namespace libpata
 {
     namespace impl
     {
-
-        class CPUCommand : virtual public Command
+        class CPUBackend;
+        class CPUCommand
         {
              size_t _id;
         public:
             CPUCommand();
             inline size_t id() const { return _id; }
             virtual ~CPUCommand() = default;
-            virtual void execute(Stream *in_stream) = 0;
+            virtual void execute(CPUBackend *cpu_backend) = 0;
         };
+        typedef std::shared_ptr<CPUCommand> CPUCommandPtr;
 
-        class CPUComputeCmd : virtual public ComputeCmd, CPUCommand
+        class CPUComputeCmd : public ComputeCmd, public CPUCommand
         {
         public:
             CPUComputeCmd(const std::string &name,
                           const TensorsList &in,
-                          const TensorsList &out,
-                          const AttrList &attr): ComputeCmd(name, in, out, attr) 
+                          const TensorsList &out): ComputeCmd(name, in, out)
             {}
 
-            virtual void execute(Stream *in_stream)
+            virtual void execute(CPUBackend *cpu_backend)
             {
-                std::cout << " excuting " << _name << " in stream id " << in_stream->id() << std::endl;
+                std::cout << " CPU Default (impl me): executing " << _cmd_name << std::endl;
             }
         };
 
-        class CPUSignal : virtual public Signal, CPUCommand
+        class CPUSignal : public Signal
         {           
-            std::condition_variable _cv;
-            std::mutex _mutex;      
-
         public:
             CPUSignal() {}
-            void wait(Stream *wait_in_stream);
-            virtual void execute(Stream *in_stream);
+            void mark_ready(CPUBackend *cpu_backend);
         };
 
-        class CPUWait : virtual public Wait, CPUCommand
+        class CPUBarrier: public Barrier
         {
+            std::mutex _mx;
+            std::condition_variable _cv;
+            bool _is_ready = false;
         public:
-            CPUWait() = default;
-            virtual void execute(Stream *in_stream);
+            CPUBarrier() = default;
+            virtual void wait()
+            {
+                std::unique_lock<std::mutex> lk(_mx);
+                _cv.wait(lk, [=] { return _is_ready;});
+            }
+            
+            void signal()
+            {
+                std::unique_lock<std::mutex> lk(_mx);
+                _is_ready = true;
+                _cv.notify_all();
+            }
         };
 
-        class TestCommand : virtual public Command, CPUCommand
+        class TestCommand : public CPUComputeCmd
         {
             int *_var;
             int _test_val;
             int _msec_sleep;
 
         public:
-            TestCommand(int *variable, int test_val, int sleep_ms = 0) : _var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
+            TestCommand(int *variable, int test_val, int sleep_ms = 0):
+                CPUComputeCmd("Test", {}, {}),_var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
 
-            virtual void execute(Stream *in_stream);
+            virtual void execute(CPUBackend *cpu_backend);
         };
 
-        class CPUAddCmd: virtual public ComputeCmd, CPUCommand
+        class CPUAddCmd: public CPUComputeCmd
         {
             public:
             CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                ComputeCmd("pata.add", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                CPUComputeCmd("pata.add", TensorsList({lhs, rhs}), TensorsList({output}))
                 {}
-            virtual void execute(Stream *in_stream);
+            virtual void execute(CPUBackend *cpu_backend);
         };
 
-        class CPUMatMulCmd: virtual public ComputeCmd, CPUCommand
+        class CPUMatMulCmd: public CPUComputeCmd
         {
             public:
             CPUMatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                ComputeCmd("pata.matmul", TensorsList({lhs, rhs}), TensorsList({output}), AttrList({}))
+                CPUComputeCmd("pata.matmul", TensorsList({lhs, rhs}), TensorsList({output}))
                 {}
-            virtual void execute(Stream *in_stream);
+            virtual void execute(CPUBackend *cpu_backend);
         };
 
     }

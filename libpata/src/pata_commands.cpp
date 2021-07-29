@@ -2,6 +2,5 @@
 
 using namespace libpata;
 
-Wait::~Wait() {}
 Signal::~Signal() {}
 

@@ -5,19 +5,11 @@
 #include "cpu_commands.h"
 #include "libxsmm.h"
 #include "pata_debug.h"
+#include "cpu_backend.h"
 
 using namespace libpata;
 using namespace libpata::impl;
 
-
-void CPUWait::execute(Stream *in_stream)
-{
-    for (auto &ps : _wait_on)
-    {
-        auto sig = std::dynamic_pointer_cast<CPUSignal>(ps);
-        sig->wait(in_stream);
-    }
-}
 
 CPUCommand::CPUCommand()
 {
@@ -25,29 +17,22 @@ CPUCommand::CPUCommand()
     _id = gid++;
 }
 
-void CPUSignal::wait(Stream *wait_in_stream)
+void CPUSignal::mark_ready(CPUBackend *cpu_backend)
 {
-    std::unique_lock<std::mutex> lk(_mutex);
-        
-    if (is_ready())
-    {
-        log_dead_lock(wait_in_stream->id(), id(), -1, EventType::STREAM_WAIT);
-    } else {
-        log_dead_lock(wait_in_stream->id(), id(), sched_in_stream->id(), EventType::STREAM_WAIT);
-    }    
-    _cv.wait(lk, [=]{ return is_ready(); });
-    log_dead_lock(wait_in_stream->id(), id(), -1, EventType::WAIT_WOKE_UP);
-}
-
-void CPUSignal::execute(Stream *in_stream)
-{
-    std::unique_lock<std::mutex> lk(_mutex);
-    log_dead_lock(in_stream->id(), id(), -1, EventType::SIGNAL_ON);
+    //log_dead_lock(0, id(), -1, EventType::SIGNAL_ON);
     signal();
-    _cv.notify_all();
+    if (_waiting_on_me.empty()) return;
+    if (_waiting_on_me.size()==1) {// if there is just one cmd waiting, no need to waste this thread and create a new one...
+        cpu_backend->schedule(*_waiting_on_me.begin(), true);
+        return;
+    }
+    for (auto c:_waiting_on_me)
+    {
+        cpu_backend->schedule(c, false);
+    }
 }
 
-void TestCommand::execute(Stream *in_stream)
+void TestCommand::execute(CPUBackend *cpu_backend)
 {
     usleep(_msec_sleep * 1000);
     *_var = _test_val;
@@ -62,7 +47,7 @@ libxsmm_datatype pata_to_xsmm_dtype(DType dtype)
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
 }
 
-void CPUAddCmd::execute(Stream *in_stream)
+void CPUAddCmd::execute(CPUBackend *cpu_backend)
 {    
     if (_inputs[0].rank() == 2)
     {
@@ -124,7 +109,7 @@ void CPUAddCmd::execute(Stream *in_stream)
     }
 }
 
-void CPUMatMulCmd::execute(Stream *in_stream)
+void CPUMatMulCmd::execute(CPUBackend *cpu_backend)
 {
     auto inA = _inputs[0];
     auto inB = _inputs[1];

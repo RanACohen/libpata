@@ -15,14 +15,14 @@ TEST(TensorOperationTests, TestReluN) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = reluN(t);
-    BackendManager::Inst().backend()->wait_for_all();
+    x.sync();    
 }
 
 TEST(TensorOperationTests, TestAbs) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = abs(t);
-    BackendManager::Inst().backend()->wait_for_all();
+    x.sync();
 }
 
 TEST(TensorOperationTests, TestAdd1) {

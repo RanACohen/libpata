@@ -27,6 +27,8 @@ void log_dead_lock(int wait_id, int sig_id, int sig_str_id, EventType event);
 inline void log_dead_lock(int wait_id, int sig_id, int sig_str_id, EventType event) {};
 #endif
 
+void set_local_thread_id(unsigned id);
+
 std::ostream &LOG();
 
 class StopWatch
