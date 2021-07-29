@@ -23,7 +23,6 @@ Experimentation is around:
 
 
 
-Share & Enjoy :-)
-
+Share & Enjoy :smiley:
 
 
