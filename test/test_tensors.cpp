@@ -115,9 +115,8 @@ extern std::atomic<size_t> deadlock_put_index;
 TEST(TensorPerformanceTests, TestAdd1000) {
     deadlock_put_index=0;
     auto ws = std::make_shared<Workspace>(10000000000);
-    Tensor t({512, 1024}, FLOAT, ws);
-    float *ptF = (float*)t.base_addr();
-    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.25;
+    Tensor t({512, 1024}, FLOAT, ws);    
+    t.fill(0.f, 0.25f);
     Tensor s1 = t.subrange(Range(256));
     Tensor s2 = t[{Range(256,512)}];
     ASSERT_FLOAT_EQ(*s1.at<float>(1,1), (0.25+s1.shape()[1]*0.25));
@@ -132,7 +131,6 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     }
     std::cout << "Scheudling took " << timer << "\n";
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 65792272.0f);
-    std::cout << "Operation took " << timer << "\n";
-    BackendManager::Inst().backend()->wait_for_all();
+    std::cout << "Operation took " << timer << "\n";    
 }
 

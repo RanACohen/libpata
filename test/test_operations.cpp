@@ -28,12 +28,11 @@ TEST(TensorOperationTests, TestAbs) {
 TEST(TensorOperationTests, TestAdd1) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({20, 30}, FLOAT, ws);
-    float *ptF = (float*)t.base_addr();
-    for (unsigned i=0; i<t.volume(); i++) ptF[i]=i*0.1;
+    t.fill(0.f,0.1f);    
     Tensor s1 = t.subrange(Range(2), Range(0, 10));
     Tensor s2 = t[{Range(2), Range(5, 15)}];
-    ASSERT_EQ(*s1.at<float>(1,1), 3.1f);
-    ASSERT_EQ(*s2.at<float>(1,1), 3.6f);
+    ASSERT_FLOAT_EQ(*s1.at<float>(1,1), 3.1f);
+    ASSERT_FLOAT_EQ(*s2.at<float>(1,1), 3.6f);
 
     EXPECT_EQ(s1.shape(), s2.shape());
     auto x = s1 + s2;    

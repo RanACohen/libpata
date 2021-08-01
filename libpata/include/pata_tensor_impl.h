@@ -78,7 +78,9 @@ namespace libpata {
         {
             PATA_ASSERT(is_contiguous() && "FIll works only on contigious tensors...");
             T *pData = (T*)base_addr();
-            for (unsigned i=0; i<_volume; i++) pData[i]=start_val+ i*step;
+            for (unsigned i=0; i<_volume; i++) 
+                pData[i]=start_val+ i*step;
+                
         }
 
     private:
