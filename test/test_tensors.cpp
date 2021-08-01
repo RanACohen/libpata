@@ -10,7 +10,6 @@
 #include "pata_backend.h"
 
 using namespace libpata;
-ScheduleTimeMeasurement libpata::schedule_time_map;
 
 // Demonstrate some basic assertions.
 TEST(TensorTests, StrideTest) {
@@ -105,10 +104,10 @@ TEST(TensorPerformanceTests, TestTimeMeasure) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);
     auto x = reluN(t);
-    BackendManager::Inst().backend()->wait_for_all();
+    x.sync();
 
-    for (auto& t : schedule_time_map)
-        std::cout << "Operation took " << t.count() << "usec. \n";
+    for (auto& time : schedule_time_map)
+        std::cout << "Operation took " << time.count() << "usec. \n";
 }
 
 extern std::atomic<size_t> deadlock_put_index;
@@ -128,8 +127,8 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     StopWatch timer;
     for (unsigned i=0; i<1000; i++)
     {
-        x = x+s2;
-        //Add(x, s2, x); inplace does not work, I have a deadlock.
+        //x = x+s2;
+        Add(x, s2, x); // inplace does not work, I have a deadlock.
     }
     std::cout << "Scheudling took " << timer << "\n";
     ASSERT_FLOAT_EQ(*x.at<float>(1,1), 65792272.0f);

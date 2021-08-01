@@ -241,7 +241,7 @@ bool TensorImpl::is_ready(bool check_peers, bool check_views, bool check_base)
 
     if (check_peers)
     {
-        // if any overlap is not read, so am I
+        // if any overlap is not ready, so am I
         std::unique_lock<std::mutex> lk(_overlap_guard);
 
         for (const auto &v : _overlap_tensors)

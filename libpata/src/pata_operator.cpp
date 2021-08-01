@@ -18,7 +18,8 @@ void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
            we need to add dependecy "wait" for the current command. */ 
         in.getWaitList(wait);
     }
-    be->schedule(wait);    
+    cmd->mark_output_not_ready();
+    be->schedule(wait);
 }
 
 Tensor libpata::reluN(const Tensor &in)

@@ -34,13 +34,15 @@ namespace libpata {
                 _inputs (in), 
                 _outputs(out)
                 {
-                    for (auto o: out) {
-                        o.mark_not_ready();
-                        auto sig = o.get_signal_cmd();                        
-                        add_signal(sig);
-                    } 
                 }
-                     
+
+            void mark_output_not_ready()         
+            {
+                for (auto &o: _outputs) {
+                    o.mark_not_ready();
+                    add_signal(o.get_signal_cmd());
+                } 
+            }
             
             inline const std::string &name() { return _cmd_name; }
             TensorsList &outputs() { return _outputs;}
