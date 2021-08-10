@@ -270,17 +270,17 @@ bool TensorImpl::is_ready(bool check_peers, bool check_views, bool check_base)
     return true;
 }
 
-void TensorImpl::get_wait_list(const std::shared_ptr<Wait> &wait, bool from_view, bool from_peer)
+void TensorImpl::get_wait_list(const CommandPtr &cmd_waiting, bool from_view, bool from_peer)
 {
     if (_signal && !_signal->is_ready())
     {
-        wait->wait_on_signal(_signal);        
+        cmd_waiting->wait_on_signal(_signal);        
     }
     
     if (!from_peer)
     {
         if (_view_base) // if I am a view and not ready, so is my base not ready
-            _view_base->get_wait_list(wait, true, false);
+            _view_base->get_wait_list(cmd_waiting, true, false);
 
         std::unique_lock<std::mutex> lk(_overlap_guard);
 
@@ -289,7 +289,7 @@ void TensorImpl::get_wait_list(const std::shared_ptr<Wait> &wait, bool from_view
             auto vi = v.lock();
             if (!vi)
                 continue;
-            vi->get_wait_list(wait, false, true); // can propagate up but not to the base
+            vi->get_wait_list(cmd_waiting, false, true); // can propagate up but not to the base
         }
     }
 
@@ -303,7 +303,7 @@ void TensorImpl::get_wait_list(const std::shared_ptr<Wait> &wait, bool from_view
             auto vi = v.lock();
             if (!vi)
                 continue;
-            vi->get_wait_list(wait);
+            vi->get_wait_list(cmd_waiting);
         }       
     }
     return;

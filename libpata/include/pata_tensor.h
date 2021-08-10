@@ -62,7 +62,7 @@ namespace libpata {
         inline void sync() const { return _impl->sync(); }
         inline bool is_contiguous() const { return _impl->is_contiguous(); }
 
-        inline void getWaitList(const std::shared_ptr<Wait>& wait) const { return _impl->get_wait_list(wait); }
+        inline void getWaitList(const CommandPtr& wait) const { return _impl->get_wait_list(wait); }
         inline SignalPtr get_signal_cmd() { return _impl->_signal; }
 
         template<typename T>

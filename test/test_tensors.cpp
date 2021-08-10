@@ -134,3 +134,24 @@ TEST(TensorPerformanceTests, TestAdd1000) {
     std::cout << "Operation took " << timer << "\n";    
 }
 
+
+TEST(TensorPerformanceTests, TestOverhead) {
+    deadlock_put_index=0;
+    auto ws = std::make_shared<Workspace>(100000000);
+    Tensor x({16, 8}, FLOAT, ws);    
+    x.fill(0.f, 0.25f);    
+    Tensor s2({16, 8}, FLOAT, ws);
+    s2.fill(1.f, 0.25f);    
+    StopWatch timer;
+    const unsigned n = 10000;
+    for (unsigned i=0; i<n; i++)
+    {
+        //x = x+s2;
+        Add(x, s2, x);
+    }
+    std::cout << "Scheudling took " << timer/n << " per iteration\n";
+    x.sync();
+    ASSERT_FLOAT_EQ(*x.at<float>(0,0), n*1.f);
+    std::cout << "Operation took " << timer << "\n";    
+}
+

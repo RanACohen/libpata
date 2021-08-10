@@ -4,10 +4,8 @@
 #pragma once
 #ifndef LIBPATA_PATA_CPU_BACKEND_H
 #define LIBPATA_PATA_CPU_BACKEND_H
-#include <string>
-#include <memory>
-#include <thread>
-#include <condition_variable>
+#include <list>
+#include <mutex>
 
 #include "pata_backend.h"
 #include "cpu/cpu_commands.h"
@@ -15,17 +13,16 @@
 namespace libpata {
     namespace impl {
         class CPUBackend: public Backend {
-            friend class libpata::BackendManager;
-            friend class libpata::impl::CPUSignal;
+            friend class libpata::BackendManager;            
             CPUBackend();                        
-            void execute_cmd(const ComputeCmdPtr &cmd, bool is_sync);
-        
+            void execute_cmd(const CommandPtr &cmd);
+            std::list<CommandPtr> _pending_commands_lot;
+            std::mutex            _command_ready_mutex;
         public:
             int get_number_of_active_streams(); // for later, counting active threads.
             virtual void wait_for_all();
-            virtual void schedule(const std::shared_ptr<Wait>&wait_cmd, bool run_sync=false);
-            virtual std::shared_ptr<Signal> createSignal();
-            virtual std::shared_ptr<Wait> createWait(const CommandPtr&cmd);
+            virtual void schedule(const CommandPtr &cmd);
+            virtual std::shared_ptr<Signal> createSignal();            
             virtual std::shared_ptr<Barrier> createBarrierCmd();
             virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs);
             virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms);

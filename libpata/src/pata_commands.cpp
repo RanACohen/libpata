@@ -2,5 +2,5 @@
 
 using namespace libpata;
 
-Signal::~Signal() {}
+//Signal::~Signal() {}
 

@@ -40,7 +40,7 @@ namespace libpata {
             {
                 for (auto &o: _outputs) {
                     o.mark_not_ready();
-                    add_signal(o.get_signal_cmd());
+                    add_out_signal(o.get_signal_cmd());
                 } 
             }
             

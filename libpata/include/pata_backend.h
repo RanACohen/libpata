@@ -19,9 +19,8 @@ namespace libpata {
         virtual void wait_for_all() = 0;
 
         virtual SignalPtr createSignal() = 0;
-        virtual std::shared_ptr<Wait> createWait(const CommandPtr&cmd) = 0;
         virtual std::shared_ptr<Barrier> createBarrierCmd() = 0;
-        virtual void schedule(const std::shared_ptr<Wait>&wait_cmd, bool run_sync=false) = 0;
+        virtual void schedule(const CommandPtr &cmd) = 0;
 
         virtual ComputeCmdPtr createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs) = 0;
         virtual CommandPtr createTestCmd(int *variable, int test_val, int sleep_ms=0) = 0;

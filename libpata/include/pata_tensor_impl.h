@@ -55,7 +55,7 @@ namespace libpata {
         bool is_view_overlap(const TensorPtr &sibling_view);
 
         size_t get_pos_offset(const Shape &pos) const; // in elements units
-        void get_wait_list(const std::shared_ptr<Wait> &wait_list, bool from_view=false, bool from_peer=false);
+        void get_wait_list(const CommandPtr &wait_list, bool from_view=false, bool from_peer=false);
         bool is_ready(bool check_peers=true, bool check_views=true, bool check_base=true);
         void mark_not_ready();
 

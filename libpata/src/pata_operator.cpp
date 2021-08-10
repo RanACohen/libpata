@@ -10,16 +10,16 @@ ScheduleTimeMeasurement libpata::schedule_time_map = {};
 
 void libpata::schedule(const std::shared_ptr<ComputeCmd> &cmd)
 {
-    auto be = BackendManager::Inst().backend();
-    auto wait = be->createWait(cmd);
     for (auto in : cmd->inputs())
     {
         /* Since this command have input tensors that are not ready yet,
            we need to add dependecy "wait" for the current command. */ 
-        in.getWaitList(wait);
+        in.getWaitList(cmd);
     }
     cmd->mark_output_not_ready();
-    be->schedule(wait);
+    
+    auto be = BackendManager::Inst().backend();    
+    be->schedule(cmd);
 }
 
 Tensor libpata::reluN(const Tensor &in)

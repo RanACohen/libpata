@@ -32,41 +32,38 @@ ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const Ten
     return std::make_shared<CPUComputeCmd>(op_name, inputs, outputs);
 }
 
-void CPUBackend::schedule(const std::shared_ptr<Wait>&wait_cmd, bool run_sync)
+void CPUBackend::schedule(const CommandPtr &cmd)
 {
-    if (wait_cmd->is_ready())
-    {
-        auto barrier = std::dynamic_pointer_cast<Barrier>(wait_cmd);
+    if (cmd->is_ready())
+    {            
+        auto barrier = std::dynamic_pointer_cast<Barrier>(cmd);
         if (barrier)
         {
             std::dynamic_pointer_cast<CPUBarrier>(barrier)->signal();
             return;
         }
-        auto cmd = std::dynamic_pointer_cast<ComputeCmd>(wait_cmd->cmd_waiting());
-        execute_cmd(cmd, run_sync);
+        execute_cmd(cmd);
+    } else {
+        // todo: protect with mutext? 
+        cmd->_pending_location = _pending_commands_lot.insert(_pending_commands_lot.begin(), cmd);
     }
 
     // else we will check this again when the signal will be ready
 }
 
-void CPUBackend::execute_cmd(const ComputeCmdPtr &cmd, bool is_sync)
+void CPUBackend::execute_cmd(const CommandPtr &cmd)
 {    
-    auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
+    auto cpu_cmd = std::dynamic_pointer_cast<CPUComputeCmd>(cmd);
     PATA_ASSERT(cpu_cmd && "only CPU commands can be executed...");
-    if (is_sync)
-    {
-        //LOG() << "executing " << cmd->name() << ":" << cmd->id() << "\n";
-        cpu_cmd->execute(this);        
-        for (auto s: cmd->get_signals())
-            std::dynamic_pointer_cast<CPUSignal>(s)->mark_ready(this);
-        
-        return;
-    }
     //LOG() << "Scheduling  " << cmd->name() << "\n";
     std::thread{ [=]{
         static std::atomic<unsigned int> tid(1);
         set_local_thread_id(tid++);
-        execute_cmd(cmd, true);
+        cpu_cmd->execute(this);        
+        _command_ready_mutex.lock();
+        cpu_cmd->mark_complete(this);
+        _command_ready_mutex.unlock();
+                
     }}.detach();    
 }
 
@@ -77,13 +74,9 @@ std::shared_ptr<Barrier> CPUBackend::createBarrierCmd()
 
 std::shared_ptr<Signal> CPUBackend::createSignal()
 {
-    return std::make_shared<CPUSignal>();
+    return std::make_shared<Signal>();
 }
 
-std::shared_ptr<Wait> CPUBackend::createWait(const CommandPtr&cmd)
-{
-    return std::make_shared<Wait>(cmd);
-}
 
 CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)
 {

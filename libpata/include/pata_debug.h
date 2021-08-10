@@ -42,7 +42,17 @@ public:
     inline unsigned long leap_usec() const { 
         return is_running ? std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start_time).count() : stop_time;
     }
-    friend std::ostream& operator<<(std::ostream& os, const StopWatch& watch);
+
+    StopWatch operator/(unsigned num)
+    {
+        StopWatch ret;
+        ret.stop();
+        if (is_running) stop_time = leap_usec();
+        ret.stop_time = stop_time / num;
+        return ret;
+    }
+
+    friend std::ostream& operator<<(std::ostream& os, const StopWatch& watch);    
 };
 std::ostream& operator<<(std::ostream& os, const StopWatch& watch);
 

@@ -6,33 +6,46 @@
 #define LIBPATA_PATA_COMMAND_H
 #include <memory>
 #include <mutex>
+#include <list>
 #include <vector>
 #include <condition_variable>
 #include <atomic>
 
 namespace libpata {        
-    class Wait;
     class Command;
+    typedef std::shared_ptr<Command> CommandPtr;
+    typedef std::vector<CommandPtr> CommandList;
 
     class Signal {
         protected:
             bool _ready = false;
-            std::vector<std::shared_ptr<Wait>> _waiting_on_me;
+            CommandList _waiting_on_me;
+            std::mutex _wait_list_guard;
         public:            
             Signal() = default;
-            virtual ~Signal()=0; // mark trhis abstract, must inherit!
-            
-            inline void signal() { _ready = true;}
-            inline bool is_ready() { return _ready; }
-            inline void add_wait(const std::shared_ptr<Wait> &wait) {
-                _waiting_on_me.push_back(wait);
+            //virtual ~Signal()=0; // mark trhis abstract, must inherit!
+                        
+            inline bool is_ready() const {                 
+                return _ready; 
             }
 
-            Command *_dbg_cmd_src;
+            inline void mark_ready() {
+                _ready = true;
+            }
+
+            inline void add_wait(const CommandPtr &waited_cmd) {
+                std::unique_lock<std::mutex> lk(_wait_list_guard);
+                _waiting_on_me.push_back(waited_cmd);
+            }
+
+            inline CommandList &get_waited_commands() { return _waiting_on_me; }
+
+            std::weak_ptr<Command> _signals_me; // for debug
 
     };
     typedef std::shared_ptr<Signal> SignalPtr;
     typedef std::vector<SignalPtr> SignalList;
+    typedef std::vector<std::weak_ptr<Signal>> WeakSignalList;
 
     class Command: public std::enable_shared_from_this<Command> {
         public:
@@ -43,34 +56,21 @@ namespace libpata {
             virtual ~Command() = default;
             inline unsigned id() const { return _cmd_id;}
 
-            void add_signal(const SignalPtr &signal) { 
+            void add_out_signal(const SignalPtr &signal) { 
                 _out_signals.push_back(signal);
-                signal->_dbg_cmd_src = this;
+                signal->_signals_me = shared_from_this();
             }
-            inline const SignalList &get_signals() { return _out_signals; }
-        
-            Wait *_dbg_waiting_on;
-        protected:
-            std::string _cmd_name;
-            unsigned _cmd_id;
-            SignalList _out_signals; // signals to mark when done processing this command
-    };
-    typedef std::shared_ptr<Command> CommandPtr;
-
-    class Wait: public std::enable_shared_from_this<Wait> {
-        public:
-            Wait(const CommandPtr&cmd):_cmd_waiting(cmd){
-                if (cmd) cmd->_dbg_waiting_on = this;
-            };
-            virtual ~Wait() = default;
-            void wait_on_signal(const SignalPtr &signal) { 
-                _wait_on.push_back(signal);
+            void wait_on_signal(const SignalPtr &signal) {
+                std::unique_lock<std::mutex> lk(_wait_list_mx);
+                _wait_on_signals.push_back(signal);
                 signal->add_wait(shared_from_this());
             }
 
-            
-            bool is_ready() const { 
-                for (auto &sig: _wait_on)
+            //inline const SignalList &get_out_signals() { return _out_signals; }        
+        
+            bool is_ready() { 
+                std::unique_lock<std::mutex> lk(_wait_list_mx);
+                for (auto &sig: _wait_on_signals)
                 {
                     auto s = sig.lock();
                     if (s && !s->is_ready()) // if signal object lost, it means the tensor is lost and thus it must be ready
@@ -78,15 +78,20 @@ namespace libpata {
                 }
                 return true;
             }
-            CommandPtr cmd_waiting() const { return _cmd_waiting;}
+            std::list<std::shared_ptr<Command>>::iterator _pending_location;
         protected:
-            std::vector<std::weak_ptr<Signal>> _wait_on;        // siganls I am waiting to be ready
-            CommandPtr _cmd_waiting;
+            std::string _cmd_name;
+            unsigned _cmd_id;
+            std::mutex _wait_list_mx; // guards the _wait_on list
+            WeakSignalList _wait_on_signals; // signals that needs to be ready for executing this command
+            SignalList _out_signals; // signals to mark when done processing this command
     };
+    
 
-    class Barrier: public Wait {
+
+    class Barrier: public Command {
     public:
-        Barrier():Wait(nullptr){}
+        Barrier():Command("barrier"){}
         virtual void wait() = 0;
     };
     

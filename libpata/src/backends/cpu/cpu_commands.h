@@ -8,6 +8,7 @@
 
 #include "pata_commands.h"
 #include "pata_operator.h"
+#include "pata_debug.h"
 
 namespace libpata
 {
@@ -22,6 +23,7 @@ namespace libpata
             inline size_t id() const { return _id; }
             virtual ~CPUCommand() = default;
             virtual void execute(CPUBackend *cpu_backend) = 0;
+
         };
         typedef std::shared_ptr<CPUCommand> CPUCommandPtr;
 
@@ -35,33 +37,30 @@ namespace libpata
 
             virtual void execute(CPUBackend *cpu_backend)
             {
-                std::cout << " CPU Default (impl me): executing " << _cmd_name << std::endl;
+                LOG() << " CPU Default (impl me): executing " << _cmd_name << std::endl;
             }
-        };
 
-        class CPUSignal : public Signal
-        {           
-        public:
-            CPUSignal() {}
-            void mark_ready(CPUBackend *cpu_backend);
+            void mark_complete(CPUBackend *backend); // protected under a mutex
         };
 
         class CPUBarrier: public Barrier
         {
-            std::mutex _mx;
             std::condition_variable _cv;
             bool _is_ready = false;
         public:
             CPUBarrier() = default;
             virtual void wait()
             {
-                std::unique_lock<std::mutex> lk(_mx);
+                std::unique_lock<std::mutex> lk(_wait_list_mx);
+                if (_wait_on_signals.empty()) {
+                    return;
+                }
                 _cv.wait(lk, [=] { return _is_ready;});
             }
             
             void signal()
             {
-                std::unique_lock<std::mutex> lk(_mx);
+                std::unique_lock<std::mutex> lk(_wait_list_mx);
                 _is_ready = true;
                 _cv.notify_all();
             }

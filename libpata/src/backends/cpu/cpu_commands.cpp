@@ -17,20 +17,6 @@ CPUCommand::CPUCommand()
     _id = gid++;
 }
 
-void CPUSignal::mark_ready(CPUBackend *cpu_backend)
-{
-    //log_dead_lock(0, id(), -1, EventType::SIGNAL_ON);
-    signal();
-    if (_waiting_on_me.empty()) return;
-    if (_waiting_on_me.size()==1) {// if there is just one cmd waiting, no need to waste this thread and create a new one...
-        cpu_backend->schedule(*_waiting_on_me.begin(), true);
-        return;
-    }
-    for (auto c:_waiting_on_me)
-    {
-        cpu_backend->schedule(c, false);
-    }
-}
 
 void TestCommand::execute(CPUBackend *cpu_backend)
 {
@@ -45,6 +31,19 @@ libxsmm_datatype pata_to_xsmm_dtype(DType dtype)
                               dtype == libpata::FP16 ? LIBXSMM_DATATYPE_F16 :
                               dtype == libpata::INT32 ? LIBXSMM_DATATYPE_I32 :
                               LIBXSMM_DATATYPE_UNSUPPORTED; // todo: throw here
+}
+
+void CPUComputeCmd::mark_complete(CPUBackend *backend) // protected under a mutex
+{
+    for (auto s : _out_signals)
+    {
+        s->mark_ready();
+        for (auto &cmd : s->get_waited_commands())
+        {
+            if (cmd->is_ready())
+                backend->schedule(cmd);
+        }
+    }
 }
 
 void CPUAddCmd::execute(CPUBackend *cpu_backend)

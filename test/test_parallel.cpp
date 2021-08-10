@@ -15,14 +15,12 @@ TEST(ParallelTests, TestAsyncBasic) {
     int v=0;
 
     auto cmd = backend->createTestCmd(&v, 8, 300);
-    auto sig = backend->createSignal();
-    cmd->add_signal(sig); // the signal to set when test is ready
+    auto sig = std::make_shared<Signal>();
+    cmd->add_out_signal(sig);
     auto barrier = backend->createBarrierCmd();
-    barrier->wait_on_signal(sig); // the signal to wait for     
-    
-    auto wcmd = backend->createWait(cmd); // run cmd when wait is ready
+    barrier->wait_on_signal(sig); // the signal to wait for         
     LOG() << "Before schedule\n";
-    backend->schedule(wcmd);
+    backend->schedule(cmd);
     LOG() << "After schedule\n";
     ASSERT_EQ(v, 0);
     barrier->wait();
