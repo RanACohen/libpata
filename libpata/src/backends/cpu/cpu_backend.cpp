@@ -4,6 +4,8 @@
 #include "pata_debug.h"
 #include "cpu_backend.h"
 #include "cpu_commands.h"
+#include "pata_threads.h"
+
 //#include "pata_stream_pool.h"
 
 #include "libxsmm.h"
@@ -56,15 +58,12 @@ void CPUBackend::execute_cmd(const CommandPtr &cmd)
     auto cpu_cmd = std::dynamic_pointer_cast<CPUComputeCmd>(cmd);
     PATA_ASSERT(cpu_cmd && "only CPU commands can be executed...");
     //LOG() << "Scheduling  " << cmd->name() << "\n";
-    std::thread{ [=]{
-        static std::atomic<unsigned int> tid(1);
-        set_local_thread_id(tid++);
+    global_thread_pool.ExecuteJob([=]{
         cpu_cmd->execute(this);        
         _command_ready_mutex.lock();
         cpu_cmd->mark_complete(this);
-        _command_ready_mutex.unlock();
-                
-    }}.detach();    
+        _command_ready_mutex.unlock();                
+    });
 }
 
 std::shared_ptr<Barrier> CPUBackend::createBarrierCmd()

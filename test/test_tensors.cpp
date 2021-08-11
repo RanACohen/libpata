@@ -149,7 +149,7 @@ TEST(TensorPerformanceTests, TestOverhead) {
         //x = x+s2;
         Add(x, s2, x);
     }
-    std::cout << "Scheudling took " << timer/n << " per iteration\n";
+    std::cout << "Scheudling took " << timer << " and " << timer/n << " per iteration\n";
     x.sync();
     ASSERT_FLOAT_EQ(*x.at<float>(0,0), n*1.f);
     std::cout << "Operation took " << timer << "\n";    
