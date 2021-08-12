@@ -11,7 +11,7 @@ using namespace libpata;
 using namespace libpata::impl;
 
 
-CPUCommand::CPUCommand()
+CPUCommand::CPUCommand():scheduled(false),executed(false)
 {
     static std::atomic<size_t> gid(0);
     _id = gid++;
@@ -40,6 +40,8 @@ void CPUComputeCmd::mark_complete(CPUBackend *backend) // protected under a mute
         s->mark_ready();
         for (auto &cmd : s->get_waited_commands())
         {
+            auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
+            if (!cpu_cmd->scheduled) continue; // command is being constructed, it will be scheduled later
             if (cmd->is_ready())
                 backend->schedule(cmd);
         }

@@ -36,6 +36,9 @@ ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const Ten
 
 void CPUBackend::schedule(const CommandPtr &cmd)
 {
+    auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
+    PATA_ASSERT(cpu_cmd && "only CPU command scan be scuedhed with CPU backend");
+    cpu_cmd->scheduled = true;
     if (cmd->is_ready())
     {            
         auto barrier = std::dynamic_pointer_cast<Barrier>(cmd);
@@ -46,8 +49,8 @@ void CPUBackend::schedule(const CommandPtr &cmd)
         }
         execute_cmd(cmd);
     } else {
-        // todo: protect with mutext? 
-        cmd->_pending_location = _pending_commands_lot.insert(_pending_commands_lot.begin(), cmd);
+        // nothing todo, cmd is saved in the dependent signals
+        
     }
 
     // else we will check this again when the signal will be ready
@@ -59,6 +62,8 @@ void CPUBackend::execute_cmd(const CommandPtr &cmd)
     PATA_ASSERT(cpu_cmd && "only CPU commands can be executed...");
     //LOG() << "Scheduling  " << cmd->name() << "\n";
     global_thread_pool.ExecuteJob([=]{
+        if (cpu_cmd->executed.test_and_set())
+            return;
         cpu_cmd->execute(this);        
         _command_ready_mutex.lock();
         cpu_cmd->mark_complete(this);

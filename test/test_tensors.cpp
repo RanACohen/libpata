@@ -100,6 +100,28 @@ TEST(UtilsTests, TestStopWatch) {
     LOG() << timer << "\n";
 }
 
+TEST(UtilsTests, TestList) {
+    SafeGrowOnlyList<int, 8> L(3,5,8,7);
+    ASSERT_EQ(L.size, 4);
+    ASSERT_EQ(L[2], 8);
+
+    SafeGrowOnlyList<int, 8> L2=L;
+    ASSERT_EQ(L2.size, 4);
+    ASSERT_EQ(L2[2], 8);
+
+    SafeGrowOnlyList<int, 8> L3(L);
+    ASSERT_EQ(L3.size, 4);
+    ASSERT_EQ(L3[2], 8);
+
+    SafeGrowOnlyList<int, 8> L4;
+    L4.add(3); L4.add(5); L4.add(8); L4.add(7);
+    ASSERT_EQ(L4.size, 4);
+    ASSERT_EQ(L4[2], 8);
+
+
+}
+
+
 TEST(TensorPerformanceTests, TestTimeMeasure) {
     auto ws = std::make_shared<Workspace>(1000000);
     Tensor t({10, 20, 30}, FLOAT, ws);

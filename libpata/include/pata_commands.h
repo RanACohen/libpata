@@ -78,7 +78,7 @@ namespace libpata {
                 }
                 return true;
             }
-            std::list<std::shared_ptr<Command>>::iterator _pending_location;
+            
         protected:
             std::string _cmd_name;
             unsigned _cmd_id;

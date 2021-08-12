@@ -24,6 +24,9 @@ namespace libpata
             virtual ~CPUCommand() = default;
             virtual void execute(CPUBackend *cpu_backend) = 0;
 
+            volatile bool scheduled;
+            std::atomic_flag executed = ATOMIC_FLAG_INIT;
+
         };
         typedef std::shared_ptr<CPUCommand> CPUCommandPtr;
 
@@ -43,20 +46,24 @@ namespace libpata
             void mark_complete(CPUBackend *backend); // protected under a mutex
         };
 
-        class CPUBarrier: public Barrier
+        class CPUBarrier: public Barrier, public CPUCommand
         {
             std::condition_variable _cv;
             bool _is_ready = false;
         public:
             CPUBarrier() = default;
             virtual void wait()
-            {
+            {                
                 std::unique_lock<std::mutex> lk(_wait_list_mx);
+                scheduled = true; 
                 if (_wait_on_signals.empty()) {
                     return;
                 }
                 _cv.wait(lk, [=] { return _is_ready;});
             }
+
+            virtual void execute(CPUBackend *cpu_backend)
+            {}
             
             void signal()
             {

@@ -13,6 +13,7 @@
 #include <chrono>
 
 #include "pata_tensor.h"
+#include "pata_utils.h"
 
 using namespace std;
 
@@ -22,6 +23,7 @@ namespace libpata {
      
     class Tensor;
 
+    //typedef SafeGrowOnlyList<Tensor, 64> TensorsList;
     typedef std::vector<Tensor> TensorsList;
  
     class ComputeCmd: public Command {
@@ -31,22 +33,22 @@ namespace libpata {
                     const TensorsList &in,
                     const TensorsList &out): 
                 Command(name),
-                _inputs (in), 
+                _inputs(in), 
                 _outputs(out)
                 {
                 }
 
             void mark_output_not_ready()         
-            {
-                for (auto &o: _outputs) {
-                    o.mark_not_ready();
-                    add_out_signal(o.get_signal_cmd());
+            {                
+                for (auto &s : _outputs) {
+                    s.mark_not_ready();
+                    add_out_signal(s.get_signal_cmd());
                 } 
             }
             
             inline const std::string &name() { return _cmd_name; }
             TensorsList &outputs() { return _outputs;}
-            const TensorsList &inputs() const { return _inputs;}
+            TensorsList &inputs()  { return _inputs;}
 
         protected:           
             //std::string _name;
