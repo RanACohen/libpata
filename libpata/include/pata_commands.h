@@ -52,9 +52,11 @@ namespace libpata {
             Command(const std::string &name):_cmd_name(name){
                 static std::atomic<unsigned> cmd_id_gen(0);
                 _cmd_id = cmd_id_gen++;
+                _wait_on_signals.reserve(4);
             }
             virtual ~Command() = default;
             inline unsigned id() const { return _cmd_id;}
+            inline std::string name() const { return _cmd_name;}
 
             void add_out_signal(const SignalPtr &signal) { 
                 _out_signals.push_back(signal);

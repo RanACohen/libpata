@@ -8,6 +8,7 @@
 #include <mutex>
 
 #include "pata_backend.h"
+#include "pata_threads.h"
 #include "cpu/cpu_commands.h"
 
 namespace libpata {
@@ -18,6 +19,8 @@ namespace libpata {
             void execute_cmd(const CommandPtr &cmd);
             std::list<CommandPtr> _pending_commands_lot;
             std::mutex            _command_ready_mutex;
+            std::mutex            _log_mx;
+            ObjectPool<CPUAddCmd> _add_cmd_pool;
         public:
             int get_number_of_active_streams(); // for later, counting active threads.
             virtual void wait_for_all();

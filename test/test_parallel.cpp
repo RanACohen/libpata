@@ -59,14 +59,14 @@ TEST(ParallelTests, TestParallelAdd2DBoost) {
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
     timer.stop();
     out_tiles.clear();
-    auto par_dur = timer.leap_usec();
+    auto par_dur = timer.leap_nsec();
     std::cout << "Parallel Operation took " << timer << "\n";
     out.fill(0.0f);
     timer.start();
     Add2D(a, b, out, out_tiles, ROWS);
     ASSERT_FLOAT_EQ(*out.at<float>(1,1), 4.0f);
     timer.stop();
-    auto ser_dur = timer.leap_usec();
+    auto ser_dur = timer.leap_nsec();
     std::cout << "Serial Operation took " << timer << "\n";
     std::cout << "Parallel boosting factor " << (float)ser_dur/par_dur << "\n";
     BackendManager::Inst().backend()->wait_for_all();

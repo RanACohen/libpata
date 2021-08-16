@@ -31,7 +31,7 @@ int CPUBackend::get_number_of_active_streams()
 
 ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const TensorsList &inputs, const TensorsList &outputs)
 {
-    return std::make_shared<CPUComputeCmd>(op_name, inputs, outputs);
+    return std::make_shared<CPUComputeCmd>(op_name);
 }
 
 void CPUBackend::schedule(const CommandPtr &cmd)
@@ -47,10 +47,24 @@ void CPUBackend::schedule(const CommandPtr &cmd)
             std::dynamic_pointer_cast<CPUBarrier>(barrier)->signal();
             return;
         }
+#ifdef DEADLOCK_DBG        
+        {
+            _log_mx.lock();
+            LOG() << "scheduling cmd " << cmd->name() << ":" <<cmd->id() << "\n"<< FlushLog();
+            _log_mx.unlock();
+        }
+#endif
         execute_cmd(cmd);
     } else {
         // nothing todo, cmd is saved in the dependent signals
-        
+#ifdef DEADLOCK_DBG
+        {
+            _log_mx.lock();
+            LOG() << "cmd " << cmd->name() << ":" <<cmd->id() << " waiting...\n"<< FlushLog();
+            _log_mx.unlock();
+        }
+#endif
+
     }
 
     // else we will check this again when the signal will be ready
@@ -63,7 +77,17 @@ void CPUBackend::execute_cmd(const CommandPtr &cmd)
     //LOG() << "Scheduling  " << cmd->name() << "\n";
     global_thread_pool.ExecuteJob([=]{
         if (cpu_cmd->executed.test_and_set())
-            return;
+            {
+                LOG() << "!!!!!!!!!! cmd double execution detected!!! " << cmd->name() << ":" <<cmd->id() << "\n" << FlushLog();
+                return;
+            }
+#ifdef DEADLOCK_DBG
+        {
+            _log_mx.lock();
+            LOG() << "executing cmd " << cmd->name() << ":" <<cmd->id() << "\n" << FlushLog();
+            _log_mx.unlock();
+        }
+#endif
         cpu_cmd->execute(this);        
         _command_ready_mutex.lock();
         cpu_cmd->mark_complete(this);
@@ -89,7 +113,9 @@ CommandPtr CPUBackend::createTestCmd(int *variable, int test_val, int sleep_ms)
 
 ComputeCmdPtr CPUBackend::AddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output)
 {    
-    return std::make_shared<CPUAddCmd>(lhs, rhs, output);
+    auto obj = _add_cmd_pool.get();
+    obj->set_tensors(lhs, rhs, output);
+    return obj;
 }
 
 ComputeCmdPtr CPUBackend::MatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output)

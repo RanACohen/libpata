@@ -29,6 +29,8 @@ inline void log_dead_lock(int wait_id, int sig_id, int sig_str_id, EventType eve
 
 void set_local_thread_id(unsigned id);
 
+class FlushLog {};
+
 std::ostream &LOG();
 
 class StopWatch
@@ -38,16 +40,16 @@ class StopWatch
 public:
     unsigned long stop_time=0;
     inline void start() {start_time = std::chrono::high_resolution_clock::now(); is_running = true;}
-    inline void stop() { if (is_running) stop_time = leap_usec(); is_running = false;}
-    inline unsigned long leap_usec() const { 
-        return is_running ? std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now()-start_time).count() : stop_time;
+    inline void stop() { if (is_running) stop_time = leap_nsec(); is_running = false;}
+    inline unsigned long leap_nsec() const { 
+        return is_running ? std::chrono::duration_cast<std::chrono::nanoseconds>(std::chrono::high_resolution_clock::now()-start_time).count() : stop_time;
     }
 
     StopWatch operator/(unsigned num)
     {
         StopWatch ret;
         ret.stop();
-        if (is_running) stop_time = leap_usec();
+        if (is_running) stop_time = leap_nsec();
         ret.stop_time = stop_time / num;
         return ret;
     }
@@ -55,5 +57,6 @@ public:
     friend std::ostream& operator<<(std::ostream& os, const StopWatch& watch);    
 };
 std::ostream& operator<<(std::ostream& os, const StopWatch& watch);
+std::ostream& operator<<(std::ostream& os, const FlushLog& );
 
 #endif // LIBXLA_XLA_DEBUG_H

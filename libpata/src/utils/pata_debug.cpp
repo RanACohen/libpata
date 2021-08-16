@@ -27,6 +27,12 @@ std::ostream &LOG()
     return std::cout << "[" << thread_local_id <<" @" << system_watch << "] ";
 }
 
+std::ostream& operator<<(std::ostream& os, const FlushLog& flush)
+{
+    os.flush();
+    return os;
+}
+
 template<typename ... Args>
 std::string string_format( const std::string& format, Args ... args )
 {
@@ -40,10 +46,15 @@ std::string string_format( const std::string& format, Args ... args )
 
 std::ostream& operator<<(std::ostream& os, const StopWatch& watch)
 {
-    auto usec = watch.leap_usec();
+    auto nsec = watch.leap_nsec();
+
+    auto usec = nsec/1000;
+    if (usec == 0)
+        return os << nsec << " nSec";
+    nsec -= usec*1000;
     auto mSec = usec/1000;
     if (mSec==0)
-        return os << usec << " uSec";
+        return os << string_format("%d.%03d uSec", usec, nsec);
     usec -= mSec*1000;
     auto sec = mSec /1000;
     if (sec==0)
@@ -98,7 +109,7 @@ void dump_dead_lock()
     for (unsigned i=0; i<last; i++)
     {        
         auto &item = dead_lock_debug_info[i];
-        auto period =  system_watch.leap_usec();
+        auto period =  system_watch.leap_nsec();
         if (item.event == EventType::WAIT_WOKE_UP)
         {
             std::cout << "[" << i << "] " << period << ": stream #" << item.wait_str_id << " woke up from signal " << item.cmd_id << std::endl;

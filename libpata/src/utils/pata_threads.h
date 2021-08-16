@@ -8,6 +8,7 @@
 #include <queue>
 #include <functional>
 #include <atomic>
+#include <stack>
 
 typedef std::function<void()> Job;
 
@@ -41,5 +42,44 @@ private:
 };
 
 extern ThreadPool global_thread_pool;
+
+template<typename T>
+class ObjectPool
+{
+    std::stack<T*> _pool;
+    std::mutex _mx;
+    unsigned int _given_obj_cnt;
+
+public:
+    ObjectPool(int size=256):_given_obj_cnt(0)
+    {
+        for(int i=0; i<size; i++) _pool.push(new T());
+    }
+
+    std::shared_ptr<T> get()
+    {
+        std::unique_lock<std::mutex> lock(_mx);
+        _given_obj_cnt++;
+        T* obj;
+        if (_pool.empty()) {
+            obj = new T();
+        }
+        else {
+            obj = _pool.top();
+            _pool.pop();
+        } 
+        
+        return std::shared_ptr<T>(obj, [=](auto p) {return_obj(p);});
+    }
+
+private:
+    void return_obj(T* obj)
+    {
+        obj->clear();
+        _given_obj_cnt--;
+        std::unique_lock<std::mutex> lock(_mx);
+        _pool.push(obj);
+    }
+};
 
 #endif //LIBPATA_THREADS_H

@@ -44,6 +44,9 @@ void CPUComputeCmd::mark_complete(CPUBackend *backend) // protected under a mute
             if (!cpu_cmd->scheduled) continue; // command is being constructed, it will be scheduled later
             if (cmd->is_ready())
                 backend->schedule(cmd);
+            else {
+                LOG() << " cmd waited " << cmd->name() << ":" <<cmd->id() << " not ready!\n";                
+            }
         }
     }
 }

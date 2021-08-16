@@ -33,9 +33,7 @@ namespace libpata
         class CPUComputeCmd : public ComputeCmd, public CPUCommand
         {
         public:
-            CPUComputeCmd(const std::string &name,
-                          const TensorsList &in,
-                          const TensorsList &out): ComputeCmd(name, in, out)
+            CPUComputeCmd(const std::string &name): ComputeCmd(name, {}, {})
             {}
 
             virtual void execute(CPUBackend *cpu_backend)
@@ -81,7 +79,7 @@ namespace libpata
 
         public:
             TestCommand(int *variable, int test_val, int sleep_ms = 0):
-                CPUComputeCmd("Test", {}, {}),_var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
+                CPUComputeCmd("Test"),_var(variable), _test_val(test_val), _msec_sleep(sleep_ms) {}
 
             virtual void execute(CPUBackend *cpu_backend);
         };
@@ -89,9 +87,27 @@ namespace libpata
         class CPUAddCmd: public CPUComputeCmd
         {
             public:
-            CPUAddCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                CPUComputeCmd("pata.add", TensorsList({lhs, rhs}), TensorsList({output}))
+            CPUAddCmd():
+                CPUComputeCmd("pata.add")
                 {}
+
+            void set_tensors(const Tensor &lhs, const Tensor &rhs, const Tensor &output)
+            {
+                _inputs.push_back(lhs);
+                _inputs.push_back(rhs);
+                _outputs.push_back(output);
+            }
+            void clear()
+            {
+                _inputs.clear();
+                _outputs.clear();
+                _out_signals.clear();
+                scheduled = false;
+                executed.clear();
+                std::unique_lock<std::mutex> lk(_wait_list_mx);
+                _wait_on_signals.clear();
+                
+            }
             virtual void execute(CPUBackend *cpu_backend);
         };
 
@@ -99,8 +115,12 @@ namespace libpata
         {
             public:
             CPUMatMulCmd(const Tensor &lhs, const Tensor &rhs, const Tensor &output):
-                CPUComputeCmd("pata.matmul", TensorsList({lhs, rhs}), TensorsList({output}))
-                {}
+                CPUComputeCmd("pata.matmul")
+                {
+                    _inputs.push_back(lhs);
+                    _inputs.push_back(rhs);
+                    _outputs.push_back(output);
+                }
             virtual void execute(CPUBackend *cpu_backend);
         };
 
