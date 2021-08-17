@@ -21,6 +21,7 @@ namespace libpata {
             std::mutex            _command_ready_mutex;
             std::mutex            _log_mx;
             ObjectPool<CPUAddCmd> _add_cmd_pool;
+            ObjectPool<Signal>    _signal_cmd_pool;
         public:
             int get_number_of_active_streams(); // for later, counting active threads.
             virtual void wait_for_all();

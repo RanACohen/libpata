@@ -24,6 +24,12 @@ namespace libpata {
         public:            
             Signal() = default;
             //virtual ~Signal()=0; // mark trhis abstract, must inherit!
+
+            inline void clear()
+            {
+                _waiting_on_me.clear();
+                _ready = false;
+            }
                         
             inline bool is_ready() const {                 
                 return _ready; 
@@ -39,9 +45,7 @@ namespace libpata {
             }
 
             inline CommandList &get_waited_commands() { return _waiting_on_me; }
-
-            std::weak_ptr<Command> _signals_me; // for debug
-
+            
     };
     typedef std::shared_ptr<Signal> SignalPtr;
     typedef std::vector<SignalPtr> SignalList;
@@ -49,7 +53,7 @@ namespace libpata {
 
     class Command: public std::enable_shared_from_this<Command> {
         public:
-            Command(const std::string &name):_cmd_name(name){
+            Command(const std::string &name):_cmd_name(name),scheduled(false){
                 static std::atomic<unsigned> cmd_id_gen(0);
                 _cmd_id = cmd_id_gen++;
                 _wait_on_signals.reserve(4);
@@ -60,7 +64,7 @@ namespace libpata {
 
             void add_out_signal(const SignalPtr &signal) { 
                 _out_signals.push_back(signal);
-                signal->_signals_me = shared_from_this();
+                //signal->_signals_me = shared_from_this();
             }
             void wait_on_signal(const SignalPtr &signal) {
                 std::unique_lock<std::mutex> lk(_wait_list_mx);
@@ -81,6 +85,7 @@ namespace libpata {
                 return true;
             }
             
+            volatile bool scheduled;
         protected:
             std::string _cmd_name;
             unsigned _cmd_id;

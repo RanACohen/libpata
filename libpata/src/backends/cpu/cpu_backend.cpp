@@ -13,7 +13,7 @@
 using namespace libpata;
 using namespace libpata::impl;
 
-CPUBackend::CPUBackend()
+CPUBackend::CPUBackend():_add_cmd_pool(16384),_signal_cmd_pool(16384)
 {
     libxsmm_init();
 }
@@ -36,9 +36,9 @@ ComputeCmdPtr CPUBackend::createComputeCmd(const std::string &op_name, const Ten
 
 void CPUBackend::schedule(const CommandPtr &cmd)
 {
-    auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
-    PATA_ASSERT(cpu_cmd && "only CPU command scan be scuedhed with CPU backend");
-    cpu_cmd->scheduled = true;
+    //auto cpu_cmd = std::dynamic_pointer_cast<CPUCommand>(cmd);
+    //PATA_ASSERT(cpu_cmd && "only CPU command scan be scuedhed with CPU backend");
+    cmd->scheduled = true;
     if (cmd->is_ready())
     {            
         auto barrier = std::dynamic_pointer_cast<Barrier>(cmd);
@@ -102,7 +102,8 @@ std::shared_ptr<Barrier> CPUBackend::createBarrierCmd()
 
 std::shared_ptr<Signal> CPUBackend::createSignal()
 {
-    return std::make_shared<Signal>();
+    return _signal_cmd_pool.get();
+    //return std::make_shared<Signal>();
 }
 
 

@@ -24,7 +24,6 @@ namespace libpata
             virtual ~CPUCommand() = default;
             virtual void execute(CPUBackend *cpu_backend) = 0;
 
-            volatile bool scheduled;
             std::atomic_flag executed = ATOMIC_FLAG_INIT;
 
         };
